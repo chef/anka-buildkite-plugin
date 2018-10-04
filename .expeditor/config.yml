@@ -1,0 +1,24 @@
+# Slack channel in Chef Software slack to send notifications about build failures, etc
+slack:
+  notify_channel:
+    - releng-notify
+
+github:
+  delete_branch_on_merge: true
+  minor_bump_labels:
+     - "Version: Bump Minor"
+
+pipelines:
+  - verify
+
+merge_actions:
+  - built_in:bump_version:
+      ignore_labels:
+        - "X-skip-version-bump"
+        - "X-skip-all"
+  - bash:.expeditor/update_readme.sh:
+      only_if: built_in:bump_version
+  - built_in:update_changelog:
+      ignore_labels:
+        - "X-skip-changelog"
+        - "X-skip-all"
