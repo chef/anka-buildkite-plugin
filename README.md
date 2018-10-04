@@ -10,7 +10,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 steps:
   - command: make test
     plugins:
-      chef/anka#0.1.0:
+      chef/anka#v0.1.0:
         vm-name: macos-base-10.14
 ```
 
@@ -38,33 +38,49 @@ Example: `1`
 
 By default, the `anka-buildkite-plugin` will only pull the VM from the Anka Registry is missing. Set this value to `true` if you wish to pull the VM for every step.
 
+Example: `true`
+
 ### `inherit-environment-vars` (optional)
 
 Set this to `true` to inject the environment variables set on your host into the Anka VM.
 
+Example: `true`
+
 ### `environment-file` (optional)
 
-The fully-qualified path to a file containing environment variables you wish to inject into you Anka VM.
+The path to a file containing environment variables you wish to inject into you Anka VM.
+
+Example: `./my-env.txt`
 
 ### `no-volume` (optional)
 
 Set this to `true` if you do not wish to mount the current directory into the Anka VM.
 
+Example: `true`
+
 ### `volume` (optional)
 
-The fully-qualified path to a directory, other than the current directory, you wish to mount into the Anka VM.
+The path to a directory, other than the current directory, you wish to mount into the Anka VM.
+
+Example: `/some/directory`
 
 ### `wait-network` (optional)
 
 Set this to `true` if you wish to delay the execution of your `command` until networking has been established in the Anka VM.
 
+Example: `true`
+
 ### `workdir` (optional)
 
 The fully-qualified path of the working directory inside the Anka VM.
 
+Example: `/some/directory`
+
 ### `debug` (optional)
 
 Set this to `true` to enable debug output within the plugin.
+
+Example: `true`
 
 ## License
 
