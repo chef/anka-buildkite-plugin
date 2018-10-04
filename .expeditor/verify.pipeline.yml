@@ -7,7 +7,7 @@ steps:
   - label: ":sparkles:"
     plugins:
       plugin-linter#v2.0.0:
-        id: anka
+        id: "chef/anka"
 
   - label: ":anka: :hammer:"
     plugins:
