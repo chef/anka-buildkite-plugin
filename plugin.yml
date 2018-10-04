@@ -1,0 +1,32 @@
+name: Anka
+description: Runs your build steps in Anka virtual machines
+author: https://github.com/chef
+requirements:
+  - anka
+configuration:
+  properties:
+    vm-name:
+      type: string
+    vm-registry-tag:
+      type: string
+    vm-registry-version:
+      type: integer
+    always-pull:
+      type: string
+    inherit-environment-vars:
+      type: boolean
+    environment-file:
+      type: string
+    no-volume:
+      type: boolean
+    volume:
+      type: string
+    wait-network:
+      type: boolean
+    workdir:
+      type: string
+    debug:
+      type: boolean
+  required:
+    - vm-name
+additionalProperties: false
