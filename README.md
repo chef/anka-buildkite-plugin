@@ -68,6 +68,7 @@ Set this to `true` to enable debug output within the plugin.
 
 ## License
 
+|                      |                                          |
 |:---------------------|:-----------------------------------------|
 | **Author:**          | Tom Duffield (<tom@chef.io>)
 | **Copyright:**       | Copyright 2018, Chef Software, Inc.
