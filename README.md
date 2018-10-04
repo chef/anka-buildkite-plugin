@@ -6,11 +6,11 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 
 ## Example
 
-```yaml
+```yml
 steps:
   - command: make test
     plugins:
-      anka#0.1.0:
+      chef/anka#0.1.0:
         vm-name: macos-base-10.14
 ```
 
