@@ -101,6 +101,8 @@ anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 
 if [[ "${cleanup:-on}" =~ (on) ]]; then
   trap cleanup EXIT
+else # suspend the VM
+  trap anka suspend "$job_image_name"
 fi
 
 args+=("$job_image_name")
