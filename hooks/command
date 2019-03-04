@@ -108,6 +108,11 @@ anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 trap "cleanup $cleanup_mode" EXIT
 
 args+=("$job_image_name")
+
+# Support for yaml command lists: https://github.com/chef/anka-buildkite-plugin/issues/4
+## https://stackoverflow.com/questions/1251999/how-can-i-replace-a-newline-n-using-sed?page=1&tab=votes#comment9175314_1252191
+BUILDKITE_COMMAND=$(echo $BUILDKITE_COMMAND | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ \&\& /g')
+
 args+=("$BUILDKITE_COMMAND")
 
 echo "+++ Executing $BUILDKITE_COMMAND in $job_image_name"
