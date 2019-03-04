@@ -27,6 +27,29 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
+@test "Run with BUILDKITE_COMMAND when VM CLEANUP is disabled" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND='command "a string"'
+  export BUILDKITE_PLUGIN_ANKA_CLEANUP=false
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "ran command in anka"
+
+  unstub anka
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
 @test "Run with BUILDKITE_COMMAND when VM is missing" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"

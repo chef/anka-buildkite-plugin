@@ -8,6 +8,12 @@ if [[ "${BUILDKITE_PLUGIN_ANKA_DEBUG:-false}" =~ (true|on|1) ]] ; then
   debug_mode='on'
 fi
 
+cleanup='on'
+if [[ "${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true}" =~ (false|off|0) ]]; then
+  if [[ debug_mode == 'on' ]]; then echo ":hammer: Disabling VM Clone Cleanup"; fi
+  cleanup='off'
+fi
+
 job_image_name="${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID}"
 
 cleanup() {
@@ -93,7 +99,9 @@ fi
 
 anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 
-trap cleanup EXIT
+if [[ "${cleanup:-on}" =~ (on) ]]; then
+  trap cleanup EXIT
+fi
 
 args+=("$job_image_name")
 args+=("$BUILDKITE_COMMAND")
