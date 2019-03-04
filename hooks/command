@@ -8,18 +8,24 @@ if [[ "${BUILDKITE_PLUGIN_ANKA_DEBUG:-false}" =~ (true|on|1) ]] ; then
   debug_mode='on'
 fi
 
-cleanup='on'
+cleanup_mode='on'
 if [[ "${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true}" =~ (false|off|0) ]]; then
   if [[ debug_mode == 'on' ]]; then echo ":hammer: Disabling VM Clone Cleanup"; fi
-  cleanup='off'
+  cleanup_mode='off'
 fi
 
 job_image_name="${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID}"
 
 cleanup() {
-  echo "--- :anka: Cleaning up images"
-  anka delete --yes "$job_image_name"
-  echo "$job_image_name has been deleted"
+  if [[ $1 == "on" ]]; then
+    echo "--- :anka: Cleaning up images"
+    anka delete --yes "$job_image_name"
+    echo "$job_image_name has been deleted"
+  else
+    echo "--- :anka: Suspending VM"
+    anka suspend $job_image_name
+    echo "$job_image_name has been suspended"
+  fi
 }
 
 #
@@ -99,11 +105,7 @@ fi
 
 anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 
-if [[ "${cleanup:-on}" =~ (on) ]]; then
-  trap cleanup EXIT
-else # suspend the VM
-  trap anka suspend "$job_image_name"
-fi
+trap "cleanup $cleanup_mode" EXIT
 
 args+=("$job_image_name")
 args+=("$BUILDKITE_COMMAND")
