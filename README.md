@@ -82,6 +82,12 @@ Set this to `true` to enable debug output within the plugin.
 
 Example: `true`
 
+### `cleanup` (optional)
+
+Set this to `false` to leave the cloned images in a failed build for investigation.
+
+Example: `false`
+
 ## License
 
 |                      |                                          |

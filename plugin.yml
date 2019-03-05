@@ -27,6 +27,8 @@ configuration:
       type: string
     debug:
       type: boolean
+    cleanup:
+      type: boolean
   required:
     - vm-name
 additionalProperties: false
