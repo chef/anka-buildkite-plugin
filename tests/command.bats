@@ -13,7 +13,7 @@ load '/usr/local/lib/bats/load.bash'
   stub anka \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -27,30 +27,6 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND when VM CLEANUP is disabled (and ensure suspension)" {
-  export BUILDKITE_JOB_ID="UUID"
-  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
-  export BUILDKITE_COMMAND='command "a string"'
-  export BUILDKITE_PLUGIN_ANKA_CLEANUP=false
-
-  stub anka \
-    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
-    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
-    "suspend ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo suspended vm in anka"
-
-  run $PWD/hooks/command
-
-  assert_success
-  assert_output --partial "ran command in anka"
-
-  unstub anka
-  unset BUILDKITE_COMMAND
-  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
-  unset BUILDKITE_JOB_ID
-  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
-}
-
 @test "Run with BUILDKITE_COMMAND when VM is missing" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
@@ -60,7 +36,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -84,7 +60,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull --tag my-tag ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -110,7 +86,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull --version 1 ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -135,7 +111,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -160,7 +136,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run --workdir /workdir ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run --workdir /workdir ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -185,7 +161,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run --volume volume ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run --volume volume ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -210,7 +186,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run --no-volume ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run --no-volume ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -235,7 +211,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run --env ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run --env ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -260,7 +236,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run --env-file ./env-file ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run --env-file ./env-file ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -285,7 +261,7 @@ load '/usr/local/lib/bats/load.bash'
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run --wait-network ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} $BUILDKITE_COMMAND : echo ran command in anka" \
+    "run --wait-network ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/command
@@ -309,8 +285,8 @@ env"
   stub anka \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} ls -alht : echo ran command in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} env : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"env\" : echo ran command in anka" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
   
   run $PWD/hooks/command
@@ -323,4 +299,71 @@ env"
   unset BUILDKITE_PLUGIN_ANKA_VM_NAME
   unset BUILDKITE_JOB_ID
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Run with BUILDKITE_COMMAND when VM CLEANUP is disabled (and ensure suspension)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND='command "a string"'
+  export BUILDKITE_PLUGIN_ANKA_CLEANUP=false
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka" \
+    "suspend ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo suspended vm in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "ran command in anka"
+
+  unstub anka
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Cleanup pre-exit runs properly (delete)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
+  
+  run $PWD/hooks/pre-exit
+
+  assert_success
+  assert_output --partial "deleted vm in anka"
+
+  unstub anka
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+}
+
+@test "Cleanup pre-exit runs properly (suspend)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_CLEANUP=false
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "suspend ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo suspended vm in anka"
+  
+  run $PWD/hooks/pre-exit
+
+  assert_success
+  assert_output --partial "suspended vm in anka"
+
+  unstub anka
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+
 }

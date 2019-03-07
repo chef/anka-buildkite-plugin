@@ -1,13 +1,11 @@
 #!/bin/bash
-
-set -euo pipefail
+set -ueo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 # shellcheck source=lib/run.bash
 . "$DIR/../lib/prep.bash"
-
 # shellcheck source=lib/run.bash
 . "$DIR/../lib/run.bash"
-# shellcheck source=commands/run.sh
-. "$DIR/../commands/run.sh"
+
+cleanup $cleanup_mode
