@@ -1,9 +1,9 @@
 #!/bin/bash
-
-set -euo pipefail
+set -ueo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 . "$DIR/../lib/env.bash"
 . "$DIR/../lib/functions.bash"
-. "$DIR/../commands/run.sh"
+
+cleanup $cleanup_mode
