@@ -2,7 +2,8 @@
 
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps in [Anka](https://ankadoc.bitbucket.io/#introduction) virtual machines.
 
-> At this time, this plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
+- By default, cloned VMs will be deleted on pipeline cancellation, failure, or success.
+- At this time, this plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
 
 ## Example
 
