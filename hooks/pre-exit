@@ -3,9 +3,7 @@ set -ueo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-# shellcheck source=lib/run.bash
-. "$DIR/../lib/prep.bash"
-# shellcheck source=lib/run.bash
-. "$DIR/../lib/run.bash"
+. "$DIR/../lib/env.bash"
+. "$DIR/../lib/functions.bash"
 
 cleanup $cleanup_mode

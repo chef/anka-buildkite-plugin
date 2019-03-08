@@ -77,3 +77,5 @@ fi
 if [[ "${BUILDKITE_PLUGIN_ANKA_WAIT_NETWORK:-false}" =~ (true|on|1) ]] ; then
   args+=("--wait-network")
 fi
+
+args+=("$job_image_name")

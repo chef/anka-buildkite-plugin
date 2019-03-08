@@ -9,12 +9,6 @@ fi
 
 anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 
-trap "cleanup $cleanup_mode" EXIT
-
-args+=("$job_image_name")
-
-echo "ARGS: ${args[@]}"
-
 # Support for yaml command lists: https://github.com/chef/anka-buildkite-plugin/issues/4
 O_IFS=$IFS
 IFS=$'\n' 
