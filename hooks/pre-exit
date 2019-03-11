@@ -2,8 +2,8 @@
 set -ueo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
-
-. "$DIR/../lib/env.bash"
+# We use pre-exit as $1 to prevent pull from happening on exit
+. "$DIR/../lib/env.bash" pre-exit
 . "$DIR/../lib/functions.bash"
 
 cleanup $cleanup_mode
