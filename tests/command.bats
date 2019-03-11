@@ -5,7 +5,6 @@ load '/usr/local/lib/bats/load.bash'
 # Uncomment to enable stub debug output:
 # export ANKA_STUB_DEBUG=/dev/tty
 
-
 @test "Run with BUILDKITE_COMMAND when VM is missing" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
