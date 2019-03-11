@@ -2,8 +2,15 @@
 set -ueo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
-# We use pre-exit as $1 to prevent pull from happening on exit
-. "$DIR/../lib/env.bash" pre-exit
-. "$DIR/../lib/functions.bash"
 
-cleanup $cleanup_mode
+. "$DIR/../lib/env.bash" # Collect job_image_name
+
+if [[ ${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true} == true ]]; then
+    echo "--- :anka: Cleaning up images"
+    anka delete --yes "$job_image_name"
+    echo "$job_image_name has been deleted"
+else
+    echo "--- :anka: Suspending VM"
+    anka suspend "$job_image_name"
+    echo "$job_image_name has been suspended"
+fi

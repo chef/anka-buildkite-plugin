@@ -4,6 +4,6 @@ set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-. "$DIR/../lib/functions.bash" # must come before env.bash to support pull function
 . "$DIR/../lib/env.bash"
+. "$DIR/../lib/pull.bash"
 . "$DIR/../commands/run.sh"
