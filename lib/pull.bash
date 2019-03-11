@@ -1,13 +1,16 @@
 #!/bin/bash
 set -ueo pipefail
 
-if ( ! anka list "$BUILDKITE_PLUGIN_ANKA_VM_NAME" ) || [[ "${BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL:-false}" =~ (true|on|1) ]]; then
+if ( ! anka list "$BUILDKITE_PLUGIN_ANKA_VM_NAME" ) || [[ "${BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL:-false}" =~ (true|on|1|shrink) ]]; then
   pull_args=()
   if [[ -n "${BUILDKITE_PLUGIN_ANKA_VM_REGISTRY_TAG:-}" ]]; then
     pull_args+=("--tag" "${BUILDKITE_PLUGIN_ANKA_VM_REGISTRY_TAG:-}")
   fi
   if [[ -n "${BUILDKITE_PLUGIN_ANKA_VM_REGISTRY_VERSION:-}" ]]; then
     pull_args+=("--version" "${BUILDKITE_PLUGIN_ANKA_VM_REGISTRY_VERSION:-}")
+  fi
+  if [[ "${BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL:-}" == "shrink" ]]; then
+    pull_args+=("-s")
   fi
   echo "--- :anka: Pulling $BUILDKITE_PLUGIN_ANKA_VM_NAME from Anka Registry"
   if [[ "${debug_mode:-off}" =~ (on) ]] ; then

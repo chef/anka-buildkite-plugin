@@ -4,7 +4,6 @@ set -ueo pipefail
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 . "$DIR/../lib/env.bash" # Collect job_image_name
-
 if [[ ${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true} == true ]]; then
     echo "--- :anka: Cleaning up images"
     anka delete --yes "$job_image_name"

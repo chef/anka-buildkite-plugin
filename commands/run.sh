@@ -6,7 +6,6 @@ echo "--- :anka: Cloning $BUILDKITE_PLUGIN_ANKA_VM_NAME to $job_image_name"
 if [[ "${debug_mode:-off}" =~ (on) ]] ; then
   echo "$ anka clone $BUILDKITE_PLUGIN_ANKA_VM_NAME $job_image_name" >&2
 fi
-
 anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 
 # Support for yaml command lists: https://github.com/chef/anka-buildkite-plugin/issues/4
@@ -19,3 +18,5 @@ for COMMAND in "${BUILDKITE_COMMANDS[@]}"; do
   if [[ "${debug_mode:-off}" =~ (on) ]] ; then echo "$ anka run ${args[*]} $COMMAND" >&2; fi
   eval "anka run ${args[*]} bash -c \"${COMMAND}\""
 done
+
+
