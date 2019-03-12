@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ueo pipefail
+
 
 debug_mode='off'
 if [[ "${BUILDKITE_PLUGIN_ANKA_DEBUG:-false}" =~ (true|on|1) ]] ; then

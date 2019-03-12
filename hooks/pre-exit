@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ueo pipefail
+set -uo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
@@ -12,7 +12,7 @@ if [[ ${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true} == true ]]; then
     echo "$job_image_name has been deleted"
 else
     echo "--- :anka: Suspending VM"
-    COMMAND="anka suspend ${job_image_name}"
+    COMMAND="anka --debug suspend ${job_image_name}"
     if [[ "${debug_mode:-off}" =~ (on) ]]; then echo "$ ${COMMAND}" >&2; fi
     eval "${COMMAND}"
     echo "$job_image_name has been suspended"

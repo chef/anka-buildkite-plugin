@@ -20,7 +20,7 @@ BUILDKITE_COMMANDS=($(echo "$BUILDKITE_COMMAND"))
 IFS=$O_IFS
 for BUILDKITE_COMMAND in "${BUILDKITE_COMMANDS[@]}"; do  
   echo "+++ Executing $BUILDKITE_COMMAND in $job_image_name"
-  COMMAND="anka run ${args[*]} bash -c \"${BUILDKITE_COMMAND}\""
+  COMMAND="anka run ${args[*]} bash -e -c \"${BUILDKITE_COMMAND}\""
   if [[ "${debug_mode:-off}" =~ (on) ]]; then echo "$ ${COMMAND}" >&2; fi
   eval "${COMMAND}"
 done
