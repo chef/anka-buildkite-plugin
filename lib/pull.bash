@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ueo pipefail
+set -euo pipefail
 
 if ( ! anka list "$BUILDKITE_PLUGIN_ANKA_VM_NAME" ) || [[ "${BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL:-false}" =~ (true|on|1|shrink) ]]; then
   pull_args=()
@@ -10,7 +10,7 @@ if ( ! anka list "$BUILDKITE_PLUGIN_ANKA_VM_NAME" ) || [[ "${BUILDKITE_PLUGIN_AN
     pull_args+=("--version" "${BUILDKITE_PLUGIN_ANKA_VM_REGISTRY_VERSION:-}")
   fi
   if [[ "${BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL:-}" == "shrink" ]]; then
-    pull_args+=("-s")
+    pull_args+=("-s") # Remove other local tags to optimize the footprint
   fi
   echo "--- :anka: Pulling $BUILDKITE_PLUGIN_ANKA_VM_NAME from Anka Registry"
   if [[ "${debug_mode:-off}" =~ (on) ]] ; then

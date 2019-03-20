@@ -91,6 +91,8 @@ Set this to `false` to leave the cloned images in a failed build for investigati
 
 Example: `false`
 
+- You will need to run your buildkite agent with `cancel-grace-period=60`, as the [default 10 seconds is not enough time](https://forum.buildkite.community/t/problems-with-anka-plugin-and-pre-exit/365/7).
+
 ## License
 
 |                      |                                          |

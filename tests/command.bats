@@ -292,8 +292,6 @@ env"
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
 }
 
-# You can't really test pre-exit properly, since it's a buildkite hook, but we can make sure pre-exit does what it should.
-
 @test "Cleanup pre-exit runs properly (delete)" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
