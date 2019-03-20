@@ -5,27 +5,6 @@ load '/usr/local/lib/bats/load.bash'
 # Uncomment to enable stub debug output:
 # export ANKA_STUB_DEBUG=/dev/tty
 
-@test "Run with BUILDKITE_COMMAND when VM already exists" {
-  export BUILDKITE_JOB_ID="UUID"
-  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
-  export BUILDKITE_COMMAND='command "a string"'
-
-  stub anka \
-    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
-    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
-
-  run $PWD/hooks/command
-
-  assert_success
-  assert_output --partial "ran command in anka"
-
-  unstub anka
-  unset BUILDKITE_COMMAND
-  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
-  unset BUILDKITE_JOB_ID
-}
-
 @test "Run with BUILDKITE_COMMAND when VM is missing" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
@@ -106,6 +85,30 @@ load '/usr/local/lib/bats/load.bash'
   stub anka \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "ran command in anka"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+}
+
+@test "Run with BUILDKITE_COMMAND when VM is always pulled (shrink)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND='command "a string"'
+  export BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL="shrink"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "registry pull -s ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
     "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
 
@@ -289,15 +292,12 @@ env"
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
 }
 
-# You can't really test pre-exit properly, since it's a buildkite hook, but we can make sure pre-exit does what it should.
-
 @test "Cleanup pre-exit runs properly (delete)" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="ls -alht"
 
   stub anka \
-    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "delete --yes ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo deleted vm in anka"
 
   run $PWD/hooks/pre-exit
@@ -318,7 +318,6 @@ env"
   export BUILDKITE_PLUGIN_ANKA_CLEANUP=false
 
   stub anka \
-    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "suspend ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo suspended vm in anka"
   
   run $PWD/hooks/pre-exit

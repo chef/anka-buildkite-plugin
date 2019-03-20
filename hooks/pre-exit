@@ -1,9 +1,19 @@
 #!/bin/bash
-set -ueo pipefail
+set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-. "$DIR/../lib/env.bash"
-. "$DIR/../lib/functions.bash"
-
-cleanup $cleanup_mode
+. "$DIR/../lib/env.bash" # Collect job_image_name
+if [[ ${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true} == true ]]; then
+    echo "--- :anka: Cleaning up images"
+    COMMAND="anka delete --yes ${job_image_name}"
+    if [[ "${debug_mode:-off}" =~ (on) ]]; then echo "$ ${COMMAND}" >&2; fi
+    eval "${COMMAND}"
+    echo "$job_image_name has been deleted"
+else
+    echo "--- :anka: Suspending VM"
+    COMMAND="anka suspend ${job_image_name}"
+    if [[ "${debug_mode:-off}" =~ (on) ]]; then echo "$ ${COMMAND}" >&2; fi
+    eval "${COMMAND}"
+    echo "$job_image_name has been suspended"
+fi

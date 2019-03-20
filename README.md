@@ -11,7 +11,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 steps:
   - command: make test
     plugins:
-      chef/anka#v0.3.0:
+      chef/anka#v0.4.0:
         vm-name: macos-base-10.14
 ```
 
@@ -38,6 +38,9 @@ Example: `1`
 ### `always-pull` (optional)
 
 By default, the `anka-buildkite-plugin` will only pull the VM from the Anka Registry is missing. Set this value to `true` if you wish to pull the VM for every step.
+
+- Should your registry be down and the pull fail, we will not fail the buildkite run. This prevents your registry from being a single point of failure for pipelines. We suggest monitoring for registry availability or failures.
+- You can also use `"shrink"` to remove other local tags for the vm-name, optimizing the footprint.
 
 Example: `true`
 
@@ -85,7 +88,8 @@ Example: `true`
 
 ### `cleanup` (optional)
 
-Set this to `false` to leave the cloned images in a failed build for investigation.
+Set this to `false` to leave the cloned images in a failed or complete build for investigation.
+- You will need to run your buildkite agent with `cancel-grace-period=60`, as the [default 10 seconds is not enough time](https://forum.buildkite.community/t/problems-with-anka-plugin-and-pre-exit/365/7).
 
 Example: `false`
 
