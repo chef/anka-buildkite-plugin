@@ -39,7 +39,7 @@ Example: `1`
 
 By default, the `anka-buildkite-plugin` will only pull the VM from the Anka Registry is missing. Set this value to `true` if you wish to pull the VM for every step.
 
-- `"shrink"`: Remove other local tags to optimize the footprint.
+- You can also use `"shrink"` to remove other local tags to optimize the footprint.
 
 Example: `true`
 
@@ -88,10 +88,9 @@ Example: `true`
 ### `cleanup` (optional)
 
 Set this to `false` to leave the cloned images in a failed build for investigation.
+- You will need to run your buildkite agent with `cancel-grace-period=60`, as the [default 10 seconds is not enough time](https://forum.buildkite.community/t/problems-with-anka-plugin-and-pre-exit/365/7).
 
 Example: `false`
-
-- You will need to run your buildkite agent with `cancel-grace-period=60`, as the [default 10 seconds is not enough time](https://forum.buildkite.community/t/problems-with-anka-plugin-and-pre-exit/365/7).
 
 ## License
 
