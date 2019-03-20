@@ -11,7 +11,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 steps:
   - command: make test
     plugins:
-      chef/anka#v0.3.0:
+      chef/anka#v0.4.0:
         vm-name: macos-base-10.14
 ```
 
@@ -88,7 +88,7 @@ Example: `true`
 
 ### `cleanup` (optional)
 
-Set this to `false` to leave the cloned images in a failed build for investigation.
+Set this to `false` to leave the cloned images in a failed or complete build for investigation.
 - You will need to run your buildkite agent with `cancel-grace-period=60`, as the [default 10 seconds is not enough time](https://forum.buildkite.community/t/problems-with-anka-plugin-and-pre-exit/365/7).
 
 Example: `false`
