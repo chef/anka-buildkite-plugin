@@ -3,9 +3,12 @@ set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
+# shellcheck disable=SC1090
 . "$DIR/../lib/env.bash" # Collect job_image_name
+
 if [[ ${BUILDKITE_PLUGIN_ANKA_CLEANUP:-true} == true ]]; then
     echo "--- :anka: Cleaning up images"
+    # shellcheck disable=SC2154
     COMMAND="anka delete --yes ${job_image_name}"
     if [[ "${debug_mode:-off}" =~ (on) ]]; then echo "$ ${COMMAND}" >&2; fi
     eval "${COMMAND}"
