@@ -1,15 +1,15 @@
 steps:
   - label: ":shell: Shellcheck"
     plugins:
-      shellcheck#v1.1.1:
-        files: hooks/**
+      - shellcheck#v1.1.2:
+          files: hooks/**
 
   - label: ":sparkles:"
     plugins:
-      plugin-linter#v2.0.0:
-        id: "chef/anka"
+      - plugin-linter#v2.0.0:
+          id: "chef/anka"
 
   - label: ":anka: :hammer:"
     plugins:
-      docker-compose#v2.5.1:
-        run: tests
+      - docker-compose#v2.5.1:
+          run: tests
