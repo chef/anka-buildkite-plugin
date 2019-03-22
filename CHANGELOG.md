@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.4.0 -->
+<!-- latest_release 0.4.1 -->
+## [v0.4.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.1) (2019-03-22)
+
+#### Merged Pull Requests
+- Move verify pipeline to public infrastructure [#9](https://github.com/chef/anka-buildkite-plugin/pull/9) ([tduffield](https://github.com/tduffield))
+<!-- latest_release -->
+
 ## [v0.4.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.0) (2019-03-20)
 
 #### Merged Pull Requests
 - Registry down crippling fix + shrink feature [#7](https://github.com/chef/anka-buildkite-plugin/pull/7) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.3.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.3.0) (2019-03-08)
 
