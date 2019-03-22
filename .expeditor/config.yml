@@ -10,7 +10,8 @@ github:
      - "Version: Bump Minor"
 
 pipelines:
-  - verify
+  - verify:
+      public: true
 
 merge_actions:
   - built_in:bump_version:
