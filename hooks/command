@@ -65,7 +65,8 @@ run_args+=("$job_image_name")
 echo "--- :anka: Cloning $(plugin_read_config VM_NAME) to $job_image_name"
 plugin_prompt_and_must_run anka clone "$(plugin_read_config VM_NAME)" "$job_image_name"
 
-mapfile -t commands <<< "$BUILDKITE_COMMAND"
+commands=()
+while IFS='' read -r line; do commands+=("$line"); done <<< "$BUILDKITE_COMMAND"
 for command in "${commands[@]}"; do
   echo "+++ Executing $command in $job_image_name"
   plugin_prompt_and_must_run anka run "${run_args[@]}" bash -c "$command"
