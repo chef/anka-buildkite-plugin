@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.4.1 -->
+<!-- latest_release 0.4.2 -->
+## [v0.4.2](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.2) (2019-03-26)
+
+#### Merged Pull Requests
+- Update and improve our bash usage to fix tests [#8](https://github.com/chef/anka-buildkite-plugin/pull/8) ([tduffield](https://github.com/tduffield))
+<!-- latest_release -->
+
 ## [v0.4.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.1) (2019-03-22)
 
 #### Merged Pull Requests
 - Move verify pipeline to public infrastructure [#9](https://github.com/chef/anka-buildkite-plugin/pull/9) ([tduffield](https://github.com/tduffield))
-<!-- latest_release -->
 
 ## [v0.4.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.0) (2019-03-20)
 
