@@ -3,3 +3,6 @@ lint:
 
 bats:
 	docker-compose run tests
+
+shellcheck:
+	shellcheck hooks/**

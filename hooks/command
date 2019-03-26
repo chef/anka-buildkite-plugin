@@ -3,24 +3,70 @@ set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-. "$DIR/../lib/env.bash"
-. "$DIR/../lib/pull.bash"
+# shellcheck disable=SC1090
+. "$DIR/../lib/shared.bash"
 
-echo "--- :anka: Cloning $BUILDKITE_PLUGIN_ANKA_VM_NAME to $job_image_name"
+job_image_name="$(plugin_read_config VM_NAME)-$BUILDKITE_JOB_ID"
 
-if [[ "${debug_mode:-off}" =~ (on) ]] ; then
-  echo "$ anka clone $BUILDKITE_PLUGIN_ANKA_VM_NAME $job_image_name" >&2
+#
+# Pull Down the Image
+#
+
+if ( ! anka list "$(plugin_read_config VM_NAME)" ) || [[ $(plugin_read_config ALWAYS_PULL false) =~ (true|on|1|shrink) ]]; then
+  pull_args=()
+  if [[ -n $(plugin_read_config VM_REGISTRY_TAG) ]]; then
+    pull_args+=("--tag" "$(plugin_read_config VM_REGISTRY_TAG)")
+  fi
+  if [[ -n $(plugin_read_config VM_REGISTRY_VERSION) ]]; then
+    pull_args+=("--version" "$(plugin_read_config VM_REGISTRY_VERSION)")
+  fi
+  if [[ $(plugin_read_config ALWAYS_PULL) == "shrink" ]]; then
+    pull_args+=("-s") # Remove other local tags to optimize the footprint
+  fi
+  echo "--- :anka: Pulling $(plugin_read_config VM_NAME) from Anka Registry"
+  plugin_prompt_and_run anka registry pull "${pull_args[@]}" "$(plugin_read_config VM_NAME)"
+else
+  echo ":anka: $(plugin_read_config VM_NAME) is already present on the host"
 fi
-anka clone "$BUILDKITE_PLUGIN_ANKA_VM_NAME" "$job_image_name"
 
-# Support for yaml command lists: https://github.com/chef/anka-buildkite-plugin/issues/4
-O_IFS=$IFS
-IFS=$'\n' 
-BUILDKITE_COMMANDS=($(echo "$BUILDKITE_COMMAND"))
-IFS=$O_IFS
-for BUILDKITE_COMMAND in "${BUILDKITE_COMMANDS[@]}"; do  
-  echo "+++ Executing $BUILDKITE_COMMAND in $job_image_name"
-  COMMAND="anka run ${args[*]} bash -c \"${BUILDKITE_COMMAND}\""
-  if [[ "${debug_mode:-off}" =~ (on) ]]; then echo "$ ${COMMAND}" >&2; fi
-  eval "${COMMAND}"
+#
+# Parse out all the run command options
+#   anka run --help
+#
+
+run_args=()
+# Working directory inside the VM
+if [[ -n $(plugin_read_config WORKDIR) ]] ; then
+  run_args+=("--workdir" "$(plugin_read_config WORKDIR)")
+fi
+# Mount host directory (current directory by default)
+if [[ -n $(plugin_read_config VOLUME) ]] ; then
+  run_args+=("--volume" "$(plugin_read_config VOLUME)")
+fi
+# Prevent the mounting of the host directory
+if [[ $(plugin_read_config NO_VOLUME false) =~ (true|on|1) ]] ; then
+  run_args+=("--no-volume")
+fi
+# Inherit environment variables from host
+if [[ $(plugin_read_config INHERIT_ENVIRONMENT_VARS false) =~ (true|on|1) ]] ; then
+  run_args+=("--env")
+fi
+# Provide an environment variable file
+if [[ -n $(plugin_read_config ENVIRONMENT_FILE) ]] ; then
+  run_args+=("--env-file" "$(plugin_read_config ENVIRONMENT_FILE)")
+fi
+# Wait to start processing until network can be established
+if [[ $(plugin_read_config WAIT_NETWORK false) =~ (true|on|1) ]] ; then
+  run_args+=("--wait-network")
+fi
+run_args+=("$job_image_name")
+
+# shellcheck disable=SC2154
+echo "--- :anka: Cloning $(plugin_read_config VM_NAME) to $job_image_name"
+plugin_prompt_and_must_run anka clone "$(plugin_read_config VM_NAME)" "$job_image_name"
+
+mapfile -t commands <<< "$BUILDKITE_COMMAND"
+for command in "${commands[@]}"; do
+  echo "+++ Executing $command in $job_image_name"
+  plugin_prompt_and_must_run anka run "${run_args[@]}" bash -c "$command"
 done
