@@ -9,12 +9,12 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 job_image_name="$(plugin_read_config VM_NAME)-$BUILDKITE_JOB_ID"
 
 if [[ $(plugin_read_config CLEANUP true) == true ]]; then
-    echo "--- :anka: Cleaning up images"
+    echo "--- :anka: Cleaning up clone"
     # shellcheck disable=SC2154
     plugin_prompt_and_must_run anka delete --yes "$job_image_name"
     echo "$job_image_name has been deleted"
 else
-    echo "--- :anka: Suspending VM"
+    echo "--- :anka: Suspending clone"
     plugin_prompt_and_must_run anka "suspend" "$job_image_name"
     echo "$job_image_name has been suspended"
 fi
