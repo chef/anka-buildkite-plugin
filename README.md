@@ -4,6 +4,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 
 - By default, cloned VMs will be deleted on pipeline cancellation, failure, or success.
 - At this time, this plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
+- A lock file (`/tmp/anka-buildkite-plugin-lock`) is created around pull and cloning. This prevents collision/ram state corruption when you're running two different jobs and pulling two different tags on the same anka node. The error you'd see otherwise is `state_lib/b026f71c-7675-11e9-8883-f01898ec0a5d.ank: failed to open image, error 2`
 
 ## Example
 
@@ -11,7 +12,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 steps:
   - command: make test
     plugins:
-      - chef/anka#v0.4.4:
+      - chef/anka#v0.5.0:
         vm-name: macos-base-10.14
 ```
 
@@ -86,12 +87,53 @@ Set this to `true` to enable debug output within the plugin.
 
 Example: `true`
 
+### `anka-debug` (optional)
+
+Set this to `true` to enable anka --debug output when running anka commands.
+
+Example: `true`
+
 ### `cleanup` (optional)
 
 Set this to `false` to leave the cloned images in a failed or complete build for investigation.
 - You will need to run your buildkite agent with `cancel-grace-period=60`, as the [default 10 seconds is not enough time](https://forum.buildkite.community/t/problems-with-anka-plugin-and-pre-exit/365/7).
 
 Example: `false`
+
+### `bash-interactive` (optional)
+
+This allows you to execute commands through anka run with an interactive shell (`anka run` does not support tty/interactive shell by default).
+
+Example: `true`
+
+### `pre-commands` (optional) (DANGEROUS)
+
+Commands to run on the HOST machine BEFORE any guest/anka run commands. Useful if you need to download buildkite artifacts into the current working directory from a previous step. This can destroy your host. Be very careful what you do with it.
+
+Example: `buildkite-agent artifact download "build.tar.gz" . --step ":aws: Amazon Linux 1 Build"`
+
+### `post-commands` (optional) (DANGEROUS)
+
+Commands to run on the HOST machine AFTER any guest/anka run commands. Useful if you need to upload artifacts created in the build/test process. This can destroy your host. Be very careful what you do with it.
+
+Example: `buildkite-agent artifact upload "build.tar.gz"`
+
+## Anka Modify ---
+
+### `modify-cpu` (optional)
+
+Will stop the VM, set CPU cores, and then execute commands you've specified.
+
+Example: `6`
+
+### `modify-ram` (optional)
+
+Will stop the VM, set memory size, and then execute commands you've specified.
+
+- Input is interpreted as G; if you input 32, it will use 32G in the anka modify command.
+
+Example: `32`
+
 
 ## License
 

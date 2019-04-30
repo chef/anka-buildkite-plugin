@@ -27,8 +27,20 @@ configuration:
       type: string
     debug:
       type: boolean
+    anka-debug:
+      type: boolean
     cleanup:
       type: boolean
+    bash-interactive:
+      type: boolean
+    pre-commands:
+      type: array
+    post-commands:
+      type: array
+    modify-cpu:
+      type: integer
+    modify-ram:
+      type: integer
   required:
     - vm-name
 additionalProperties: false
