@@ -8,13 +8,17 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 job_image_name="$(plugin_read_config VM_NAME)-$BUILDKITE_JOB_ID"
 
-if [[ $(plugin_read_config CLEANUP true) == true ]]; then
+lock_file disable
+
+# shellcheck disable=SC2091
+if $(plugin_read_config CLEANUP true); then
     echo "--- :anka: Cleaning up clone"
-    # shellcheck disable=SC2154
-    plugin_prompt_and_must_run anka delete --yes "$job_image_name"
+    # shellcheck disable=SC2154,SC2086
+    plugin_prompt_and_run anka $ANKA_DEBUG delete --yes "$job_image_name"
     echo "$job_image_name has been deleted"
 else
     echo "--- :anka: Suspending clone"
-    plugin_prompt_and_must_run anka "suspend" "$job_image_name"
+    # shellcheck disable=SC2086
+    plugin_prompt_and_run anka $ANKA_DEBUG "suspend" "$job_image_name"
     echo "$job_image_name has been suspended"
 fi

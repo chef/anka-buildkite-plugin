@@ -4,6 +4,9 @@ load '/usr/local/lib/bats/load.bash'
 
 # Uncomment to enable stub debug output:
 # export ANKA_STUB_DEBUG=/dev/tty
+# export BUILDKITE_PLUGIN_ANKA_DEBUG=true
+
+export BUILDKITE_BUILD_URL="https://buildkite.com/repo/name/builds/12034"
 
 @test "Run with BUILDKITE_COMMAND when VM is missing" {
   export BUILDKITE_JOB_ID="UUID"
@@ -124,7 +127,7 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND with custom workdir" {
+@test "Run with BUILDKITE_COMMAND and custom workdir" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="command \\\"a string\\\""
@@ -148,7 +151,7 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND with custom host volume" {
+@test "Run with BUILDKITE_COMMAND and custom host volume" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="command \\\"a string\\\""
@@ -172,7 +175,7 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND with no volumes" {
+@test "Run with BUILDKITE_COMMAND and no volumes" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="command \\\"a string\\\""
@@ -196,7 +199,7 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND with env vars from host" {
+@test "Run with BUILDKITE_COMMAND and env vars from host" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="command \\\"a string\\\""
@@ -220,7 +223,7 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND with env vars from file" {
+@test "Run with BUILDKITE_COMMAND and env vars from file" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="command \\\"a string\\\""
@@ -268,7 +271,7 @@ load '/usr/local/lib/bats/load.bash'
   unset BUILDKITE_JOB_ID
 }
 
-@test "Run with BUILDKITE_COMMAND with yaml command list" {
+@test "Run with BUILDKITE_COMMAND as yaml command list" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="ls -alht
@@ -291,4 +294,216 @@ env"
   unset BUILDKITE_PLUGIN_ANKA_VM_NAME
   unset BUILDKITE_JOB_ID
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Run with BUILDKITE_COMMAND with anka-debug" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht
+env"
+  export BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG=true
+
+  stub anka \
+    "--debug list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "--debug clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "--debug run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran ls command in anka" \
+    "--debug run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"env\" : echo ran env command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "cloned vm in anka"
+  assert_output --partial "ran ls command in anka"
+  assert_output --partial "ran env command in anka"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Run with PRE_COMMANDS (yaml list)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS="buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 1 Build\"
+buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 2 Build\""
+
+  stub buildkite-agent \
+    'artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 1 Build\" : echo downloaded artifact 1' \
+    'artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 2 Build\" : echo downloaded artifact 2'
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran ls command in anka" \
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "downloaded artifact 1"
+  assert_output --partial "downloaded artifact 2"
+  assert_output --partial "cloned vm in anka"
+  assert_output --partial "ran ls command in anka"
+  # assert_output --partial "echo downloaded artifact2"
+
+  unstub anka
+  unstub buildkite-agent
+  unset BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+
+@test "Run with POST_COMMANDS (yaml list)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_POST_COMMANDS="buildkite-agent artifact upload \"build.tar.gz\"
+buildkite-agent artifact upload \"build.tar.gz\""
+
+  stub buildkite-agent \
+    'artifact upload \"build.tar.gz\" : echo upload artifact 1' \
+    'artifact upload \"build.tar.gz\" : echo upload artifact 2'
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran ls command in anka" \
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "upload artifact 1"
+  assert_output --partial "upload artifact 2"
+  assert_output --partial "cloned vm in anka"
+  assert_output --partial "ran ls command in anka"
+
+  unstub anka
+  unstub buildkite-agent
+  unset BUILDKITE_PLUGIN_ANKA_POST_COMMANDS
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Run with bash ops" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_BASH_INTERACTIVE=true
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -i -c \"ls -alht\" : echo ran ls command in anka" \
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "ran ls command in anka"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_BASH_INTERACTIVE
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Modify" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_CPU="6"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_RAM="32"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} | grep suspended : exit 0" \
+    "stop ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set cpu 6 : echo set cpu 6" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set ram 32G : echo set ram 32G" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ls command run"
+
+  run $PWD/hooks/command
+  assert_success
+  assert_output --partial "cloned vm"
+  assert_output --partial "stopped"
+  assert_output --partial "set cpu 6"
+  assert_output --partial "set ram 32G"
+  assert_output --partial "ls command"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_RAM
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_CPU
+  unset BUILDKITE_PLUGIN_ANKA_BASH_INTERACTIVE
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+
+@test "Modify --force" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_CPU="6"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_RAM="32"
+  export FORCED=true
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
+    "stop --force ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set cpu 6 : echo set cpu 6" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set ram 32G : echo set ram 32" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ls command run"
+
+  run $PWD/hooks/command
+  assert_output --partial "stopped"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_RAM
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_CPU
+  unset BUILDKITE_PLUGIN_ANKA_BASH_INTERACTIVE
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+
+@test "Lock file is created and deleted" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="command"
+  export BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL="true"
+  export LOCK_FILE="/tmp/anka-buildkite-plugin-lock"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "Created ${LOCK_FILE}"
+  assert_output --partial "Deleted ${LOCK_FILE}"
+
+  unstub anka
+  unset LOCK_FILE
+  unset BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
 }
