@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.4.4 -->
+<!-- latest_release 0.5.0 -->
+## [v0.5.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.0) (2019-05-23)
+
+#### Merged Pull Requests
+- [Features] 0.5.0 [#15](https://github.com/chef/anka-buildkite-plugin/pull/15) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.4.4](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.4) (2019-04-01)
 
 #### Merged Pull Requests
 - Terminology changes [#11](https://github.com/chef/anka-buildkite-plugin/pull/11) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.4.3](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.3) (2019-03-26)
 
