@@ -12,7 +12,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 steps:
   - command: make test
     plugins:
-      - chef/anka#v0.5.0:
+      - chef/anka#v0.5.1:
         vm-name: macos-base-10.14
 ```
 

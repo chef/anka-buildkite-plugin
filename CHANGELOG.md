@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.5.0 -->
+<!-- latest_release 0.5.1 -->
+## [v0.5.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.1) (2019-05-29)
+
+#### Merged Pull Requests
+- Fixing unbound variable for bash differences + readme update [#16](https://github.com/chef/anka-buildkite-plugin/pull/16) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.5.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.0) (2019-05-23)
 
 #### Merged Pull Requests
 - [Features] 0.5.0 [#15](https://github.com/chef/anka-buildkite-plugin/pull/15) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.4.4](https://github.com/chef/anka-buildkite-plugin/tree/v0.4.4) (2019-04-01)
 
