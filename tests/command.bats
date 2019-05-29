@@ -4,7 +4,7 @@ load '/usr/local/lib/bats/load.bash'
 
 # Uncomment to enable stub debug output:
 # export ANKA_STUB_DEBUG=/dev/tty
-# export BUILDKITE_PLUGIN_ANKA_DEBUG=true
+export BUILDKITE_PLUGIN_ANKA_DEBUG=true
 
 export BUILDKITE_BUILD_URL="https://buildkite.com/repo/name/builds/12034"
 
