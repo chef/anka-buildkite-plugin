@@ -13,7 +13,7 @@ steps:
   - command: make test
     plugins:
       - chef/anka#v0.5.1:
-        vm-name: macos-base-10.14
+          vm-name: macos-base-10.14
 ```
 
 ## Configuration
