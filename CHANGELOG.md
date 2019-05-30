@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.5.1 -->
+<!-- latest_release 0.5.2 -->
+## [v0.5.2](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.2) (2019-05-30)
+
+#### Merged Pull Requests
+- Fix the indentation in the YAML example in the README [#18](https://github.com/chef/anka-buildkite-plugin/pull/18) ([tduffield](https://github.com/tduffield))
+<!-- latest_release -->
+
 ## [v0.5.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.1) (2019-05-29)
 
 #### Merged Pull Requests
 - Fixing unbound variable for bash differences + readme update [#16](https://github.com/chef/anka-buildkite-plugin/pull/16) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.5.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.0) (2019-05-23)
 
