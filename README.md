@@ -134,6 +134,15 @@ Will stop the VM, set memory size, and then execute commands you've specified.
 
 Example: `32`
 
+## Anka Start ---
+
+### `start-devices` (optional)
+
+Will stop the VM, then start it with the USB device(s).
+
+- Input should be the USB device ID/Location and should already be claimed.
+
+Example: `341835776`
 
 ## License
 

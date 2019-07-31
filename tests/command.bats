@@ -358,6 +358,37 @@ buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
 }
 
+@test "Run with START_DEVICES (yaml list)" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_START_DEVICES="iphone1
+iphone2"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} | grep suspended : exit 0" \
+    "stop ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped" \
+    "start -d iphone1 -d iphone2 ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo started with devices" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran ls command in anka" \
+    
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "cloned vm"
+  assert_output --partial "stopped"
+  assert_output --partial "started with devices"
+  assert_output --partial "ran ls command in anka"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_START_DEVICES
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
 
 @test "Run with POST_COMMANDS (yaml list)" {
   export BUILDKITE_JOB_ID="UUID"
