@@ -41,6 +41,8 @@ configuration:
       type: integer
     modify-ram:
       type: integer
+    start-devices:
+      type: array
   required:
     - vm-name
 additionalProperties: false
