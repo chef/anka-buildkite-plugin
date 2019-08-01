@@ -7,7 +7,9 @@ github:
   delete_branch_on_merge: true
   version_tag_format: "v{{version}}"
   minor_bump_labels:
-     - "Version: Bump Minor"
+    - "Expeditor: Bump Version Minor"
+  major_bump_labels:
+    - "Expeditor: Bump Major Version"
 
 pipelines:
   - verify:
@@ -16,11 +18,11 @@ pipelines:
 merge_actions:
   - built_in:bump_version:
       ignore_labels:
-        - "X-skip-version-bump"
-        - "X-skip-all"
+        - "Expeditor: Skip Version Bump"
+        - "Expeditor: Skip All"
   - bash:.expeditor/update_readme.sh:
       only_if: built_in:bump_version
   - built_in:update_changelog:
       ignore_labels:
-        - "X-skip-changelog"
-        - "X-skip-all"
+        - "Expeditor: Skip Changelog"
+        - "Expeditor: Skip All"
