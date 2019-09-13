@@ -447,6 +447,105 @@ buildkite-agent artifact upload \"build.tar.gz\""
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
 }
 
+
+@test "Run with registry-failover" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="command"
+  export BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL="true"
+  export BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES='registry_1
+registry_2
+registry_3'
+
+  stub anka \
+    "registry list : echo -" \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unstub anka
+
+  stub anka \
+    "registry list : exit 30" \
+    "registry list-repos -d : echo '| id     | registry_1  |'" \
+    "registry -r registry_2 list : echo -" \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry -r registry_2 pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unstub anka
+
+  stub anka \
+    "registry list : exit 30" \
+    "registry list-repos -d : echo '| id     | registry_1  |'" \
+    "registry -r registry_2 list : exit 30" \
+    "registry -r registry_3 list : echo -" \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry -r registry_3 pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES
+}
+
+@test "Run with pre-execute-sleep" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht
+env"
+  export BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL="true"
+  export BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP="5"
+
+  stub anka \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"sleep ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP}; ls -alht\" : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"sleep ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP}; env\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP
+
+  stub anka \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"env\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unset BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+}
+
 @test "Modify" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
