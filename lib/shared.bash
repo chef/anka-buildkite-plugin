@@ -72,6 +72,26 @@ function lock_file() {
 
 ##############
 # Anka --debug
-export ANKA_DEBUG=${ANKA_DEBUG:-""}
 export BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG=$(plugin_read_config ANKA_DEBUG false)
-$BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG && export ANKA_DEBUG="--debug" || true
+$BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG && export ANKA_DEBUG="--debug" || export ANKA_DEBUG=
+
+########################################################
+# Sleep (useful for networking related issues in the VM)
+export BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP=$(plugin_read_config PRE_EXECUTE_SLEEP false)
+[[ $BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP != false ]] && export PRE_EXECUTE_SLEEP="sleep $BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP; " || export PRE_EXECUTE_SLEEP=
+
+###################
+# Registry Failover
+export BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES=$(plugin_read_list FAILOVER_REGISTRIES)
+export FAILOVER_REGISTRY=
+if [[ -n "${BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES}" ]]; then
+  if [[ ! $(anka registry list) ]]; then
+    # Remove the default (which should be down)
+    DEFAULT_REGISTRY=$(anka registry list-repos -d | grep id | cut -d' ' -f8)
+    for registry in $BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES; do # Grab the first available registry from the list
+      [[ $registry == $DEFAULT_REGISTRY ]] && continue
+      [[ ! -z $FAILOVER_REGISTRY ]] && continue
+      [[ $(anka registry -r $registry list) ]] && export FAILOVER_REGISTRY="-r $registry" || continue
+    done
+  fi
+fi

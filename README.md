@@ -118,6 +118,26 @@ Commands to run on the HOST machine AFTER any guest/anka run commands. Useful if
 
 Example: `buildkite-agent artifact upload "build.tar.gz"`
 
+### `failover-registries` (optional)
+
+Should the default registry not be available, the failover registries you specify will be used. It will go through each in the list and use the first available.
+
+Example:
+```
+    plugins:
+    - chef/anka#v0.5.4:
+        failover-registries:
+          - 'registry_1'
+          - 'registry_2'
+          - 'registry_3'
+```
+
+### `pre-execute-sleep` (optional)
+
+Will execute a sleep with the value you specify within anka run and before the first command. Useful if you need to ensure that certain processes and networking are fully functional before running your commands in the VM.
+
+Example: `5` (seconds)
+
 ## Anka Modify ---
 
 ### `modify-cpu` (optional)

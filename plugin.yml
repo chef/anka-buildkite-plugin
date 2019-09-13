@@ -37,6 +37,10 @@ configuration:
       type: array
     post-commands:
       type: array
+    failover-registries:
+      type: array
+    pre-execute-sleep:
+      type: integer
     modify-cpu:
       type: integer
     modify-ram:
