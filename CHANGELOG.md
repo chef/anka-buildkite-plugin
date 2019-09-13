@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.5.3 -->
+<!-- latest_release 0.5.4 -->
+## [v0.5.4](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.4) (2019-09-13)
+
+#### Merged Pull Requests
+- Failover Registry list + anka run pre command execute sleep [#24](https://github.com/chef/anka-buildkite-plugin/pull/24) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.5.3](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.3) (2019-08-01)
 
 #### Merged Pull Requests
 - Add support for starting with devices [#21](https://github.com/chef/anka-buildkite-plugin/pull/21) ([bigfish24](https://github.com/bigfish24))
-<!-- latest_release -->
 
 ## [v0.5.2](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.2) (2019-05-30)
 
