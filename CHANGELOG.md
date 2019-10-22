@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.5.4 -->
+<!-- latest_release 0.5.5 -->
+## [v0.5.5](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.5) (2019-10-22)
+
+#### Merged Pull Requests
+- Fix for pre/post-commands to support chaining with &amp;&amp;, ||, etc [#25](https://github.com/chef/anka-buildkite-plugin/pull/25) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.5.4](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.4) (2019-09-13)
 
 #### Merged Pull Requests
 - Failover Registry list + anka run pre command execute sleep [#24](https://github.com/chef/anka-buildkite-plugin/pull/24) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.5.3](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.3) (2019-08-01)
 
