@@ -16,8 +16,13 @@ if [[ -n "${BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS}" ]]; then
   while IFS='' read -r line; do host_commands+=("$line"); done <<< "$BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS"
   for command in "${host_commands[@]:+${host_commands[@]}}"; do
     echo "--- :anka: Executing ${command} on host"
+    if [[ $(plugin_read_config DEBUG "false") =~ (true|on|1) ]] ; then
+      echo -ne '\033[90m$\033[0m' >&2
+      printf " %q" "eval \"$command\"" >&2
+      echo >&2
+    fi
     # shellcheck disable=SC2086
-    plugin_prompt_and_run $command
+    eval "$command"
   done
 fi
 
@@ -148,7 +153,12 @@ if [[ -n "${BUILDKITE_PLUGIN_ANKA_POST_COMMANDS}" ]]; then
   while IFS='' read -r line; do host_commands+=("$line"); done <<< "$BUILDKITE_PLUGIN_ANKA_POST_COMMANDS"
   for command in "${host_commands[@]:+${host_commands[@]}}"; do
     echo "--- :anka: Executing ${command} on host"
+    if [[ $(plugin_read_config DEBUG "false") =~ (true|on|1) ]] ; then
+      echo -ne '\033[90m$\033[0m' >&2
+      printf " %q" "eval \"$command\"" >&2
+      echo >&2
+    fi
     # shellcheck disable=SC2086
-    plugin_prompt_and_run $command
+    eval "$command"
   done
 fi

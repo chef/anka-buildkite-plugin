@@ -328,12 +328,14 @@ env"
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="ls -alht"
-  export BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS="buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 1 Build\"
+  export BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS="echo 123 && echo 456
+echo got 123 && echo \" got 456 \"
+buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 1 Build\"
 buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 2 Build\""
 
   stub buildkite-agent \
-    'artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 1 Build\" : echo downloaded artifact 1' \
-    'artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux 2 Build\" : echo downloaded artifact 2'
+    'artifact download "build.tar.gz" . --step ":aws: Amazon Linux 1 Build" : echo downloaded artifact 1' \
+    'artifact download "build.tar.gz" . --step ":aws: Amazon Linux 2 Build" : echo downloaded artifact 2'
 
   stub anka \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
@@ -343,11 +345,14 @@ buildkite-agent artifact download \"build.tar.gz\" . --step \":aws: Amazon Linux
   run $PWD/hooks/command
 
   assert_success
+  assert_output --partial "123"
+  assert_output --partial "456"
+  assert_output --partial "got 123"
+  assert_output --partial " got 456"
   assert_output --partial "downloaded artifact 1"
   assert_output --partial "downloaded artifact 2"
   assert_output --partial "cloned vm in anka"
   assert_output --partial "ran ls command in anka"
-  # assert_output --partial "echo downloaded artifact2"
 
   unstub anka
   unstub buildkite-agent
@@ -394,12 +399,14 @@ iphone2"
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
   export BUILDKITE_COMMAND="ls -alht"
-  export BUILDKITE_PLUGIN_ANKA_POST_COMMANDS="buildkite-agent artifact upload \"build.tar.gz\"
+  export BUILDKITE_PLUGIN_ANKA_POST_COMMANDS="echo 123 && echo 456
+echo got 123 && echo \" got 456 \"
+buildkite-agent artifact upload \"build.tar.gz\"
 buildkite-agent artifact upload \"build.tar.gz\""
 
   stub buildkite-agent \
-    'artifact upload \"build.tar.gz\" : echo upload artifact 1' \
-    'artifact upload \"build.tar.gz\" : echo upload artifact 2'
+    'artifact upload "build.tar.gz" : echo upload artifact 1' \
+    'artifact upload "build.tar.gz" : echo upload artifact 2'
 
   stub anka \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
@@ -409,6 +416,10 @@ buildkite-agent artifact upload \"build.tar.gz\""
   run $PWD/hooks/command
 
   assert_success
+  assert_output --partial "123"
+  assert_output --partial "456"
+  assert_output --partial "got 123"
+  assert_output --partial " got 456"
   assert_output --partial "upload artifact 1"
   assert_output --partial "upload artifact 2"
   assert_output --partial "cloned vm in anka"

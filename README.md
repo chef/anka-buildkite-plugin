@@ -110,13 +110,23 @@ Example: `true`
 
 Commands to run on the HOST machine BEFORE any guest/anka run commands. Useful if you need to download buildkite artifacts into the current working directory from a previous step. This can destroy your host. Be very careful what you do with it.
 
-Example: `buildkite-agent artifact download "build.tar.gz" . --step ":aws: Amazon Linux 1 Build"`
+- Be sure to double escape variables you don't want eval to try and interpolate too soon.
+
+Example:
+```
+    plugins:
+    - chef/anka . . .
+        pre-commands:
+          - 'echo 123 && echo 456'
+          - 'buildkite-agent artifact download "build.tar.gz" . --step ":aws: Amazon Linux 1 Build"'
+          - 'echo \\$variableOnTheHost'
+```
 
 ### `post-commands` (optional) (DANGEROUS)
 
 Commands to run on the HOST machine AFTER any guest/anka run commands. Useful if you need to upload artifacts created in the build/test process. This can destroy your host. Be very careful what you do with it.
 
-Example: `buildkite-agent artifact upload "build.tar.gz"`
+Example: A list, similar to pre-commands.
 
 ### `failover-registries` (optional)
 
