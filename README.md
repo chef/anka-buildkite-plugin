@@ -25,9 +25,10 @@ As an alternative, it is suggested to clone and pull the repository as the first
 Example:
 ```yml
 steps:
-  - command: "git clone $BUILDKITE_REPO && cd repo-folder && git checkout -f $BUILDKITE_COMMIT"
-  - command: "cd repo-folder; ./build.sh"
+  - command: git clone $BUILDKITE_REPO && cd repo-folder && git checkout -f $BUILDKITE_COMMIT
+  - command: cd repo-folder; ./build.sh
     plugins:
+      - thedyrt/skip-checkout#v0.1.1: ~
       - chef/anka#v0.5.5:
           vm-name: base-vm-mojave
           no-volume: true
