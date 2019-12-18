@@ -16,6 +16,26 @@ steps:
           vm-name: macos-base-10.14
 ```
 
+## Best Practices
+### Shared Folders
+
+[Veertu](https://veertu.com) states that the performance of using shared folders is not completely optimized, so it is best practice to disable this.
+As an alternative, it is suggested to clone and pull the repository as the first commands in the pipeline step.
+
+Example:
+```yml
+steps:
+  - commands:
+      - git clone $BUILDKITE_REPO && cd repo-folder && git checkout -f $BUILDKITE_COMMIT
+      - cd repo-folder; ./build.sh
+    plugins:
+      - thedyrt/skip-checkout#v0.1.1: ~
+      - chef/anka#v0.5.5:
+          vm-name: base-vm-mojave
+          no-volume: true
+          wait-network: true
+```
+
 ## Configuration
 
 ### `vm-name` (required)
