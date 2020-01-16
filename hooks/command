@@ -138,7 +138,7 @@ bash_ops+=("-c") # Needed, don't remove
 ##########
 # ANKA RUN
 commands=()
-while IFS='' read -r line; do commands+=("${PRE_EXECUTE_SLEEP}$line"); done <<< "$BUILDKITE_COMMAND"
+while IFS='' read -r line; do commands+=("${PRE_EXECUTE_SLEEP}${PRE_EXECUTE_PING_SLEEP}$line"); done <<< "$BUILDKITE_COMMAND"
 for command in "${commands[@]:-}"; do
   echo "+++ Executing $command in $job_image_name"
   # shellcheck disable=SC2086

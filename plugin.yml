@@ -41,6 +41,8 @@ configuration:
       type: array
     pre-execute-sleep:
       type: integer
+    pre-execute-ping-sleep:
+      type: string
     modify-cpu:
       type: integer
     modify-ram:

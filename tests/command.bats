@@ -557,6 +557,46 @@ env"
   unset BUILDKITE_JOB_ID
 }
 
+@test "Run with pre-execute-ping-sleep" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht
+env"
+  export BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL="true"
+  export BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP="8.8.8.8"
+
+  stub anka \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"while ! ping -c1 ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP} | grep -v '\\---'; do sleep 1; done;ls -alht\" : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"while ! ping -c1 ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP} | grep -v '\\---'; do sleep 1; done;env\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP
+
+  stub anka \
+    "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
+    "registry pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
+    "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"env\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+
+  unset BUILDKITE_PLUGIN_ANKA_ALWAYS_PULL
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+}
+
+
 @test "Modify" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
