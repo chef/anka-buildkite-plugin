@@ -168,6 +168,12 @@ Will execute a sleep with the value you specify within anka run and before the f
 
 Example: `5` (seconds)
 
+### `pre-execute-ping-sleep` (optional)
+
+Will execute a ping while loop sleep with the ip you specify before any commands run in the VM. Useful if you need to ensure that certain processes and networking are fully functional before running your commands in the VM.
+
+Example: `8.8.8.8`
+
 ## Anka Modify ---
 
 ### `modify-cpu` (optional)
