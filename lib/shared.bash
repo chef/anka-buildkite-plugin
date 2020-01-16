@@ -84,7 +84,7 @@ export BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_SLEEP=$(plugin_read_config PRE_EXECUTE_
 # while-Sleep (useful for networking init issues; similar to the PRE_EXECUTE_SLEEP)
 export BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP=$(plugin_read_config PRE_EXECUTE_PING_SLEEP)
 export PRE_EXECUTE_PING_SLEEP=
-[[ ! -z $BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP ]] && export PRE_EXECUTE_PING_SLEEP="while ! ping -c1 $BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP; do sleep 1; done;"
+[[ ! -z $BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP ]] && export PRE_EXECUTE_PING_SLEEP="while ! ping -c1 $BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP | grep -v '\---'; do sleep 1; done;"
 
 ###################
 # Registry Failover

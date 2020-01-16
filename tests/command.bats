@@ -3,7 +3,7 @@
 load '/usr/local/lib/bats/load.bash'
 
 # Uncomment to enable stub debug output:
-# export ANKA_STUB_DEBUG=/dev/tty
+export ANKA_STUB_DEBUG=/dev/tty
 # export BUILDKITE_PLUGIN_ANKA_DEBUG=true
 
 export BUILDKITE_BUILD_URL="https://buildkite.com/repo/name/builds/12034"
@@ -569,8 +569,8 @@ env"
     "list $BUILDKITE_PLUGIN_ANKA_VM_NAME : exit 0" \
     "registry pull $BUILDKITE_PLUGIN_ANKA_VM_NAME : echo pulled vm in anka" \
     "clone $BUILDKITE_PLUGIN_ANKA_VM_NAME ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"while ! ping -c1 ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP}; do sleep 1; done;ls -alht\" : echo ran command in anka" \
-    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"while ! ping -c1 ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP}; do sleep 1; done;env\" : echo ran command in anka"
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"while ! ping -c1 ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP} | grep -v '\\---'; do sleep 1; done;ls -alht\" : echo ran command in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"while ! ping -c1 ${BUILDKITE_PLUGIN_ANKA_PRE_EXECUTE_PING_SLEEP} | grep -v '\\---'; do sleep 1; done;env\" : echo ran command in anka"
 
   run $PWD/hooks/command
 
