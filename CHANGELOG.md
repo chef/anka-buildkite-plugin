@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.5.6 -->
+<!-- latest_release 0.5.7 -->
+## [v0.5.7](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.7) (2020-01-16)
+
+#### Merged Pull Requests
+- PRE_EXECUTE_PING_SLEEP [#28](https://github.com/chef/anka-buildkite-plugin/pull/28) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.5.6](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.6) (2019-12-18)
 
 #### Merged Pull Requests
 - added best practices for using shared folders in documentation [#26](https://github.com/chef/anka-buildkite-plugin/pull/26) ([NivKeidan](https://github.com/NivKeidan))
-<!-- latest_release -->
 
 ## [v0.5.5](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.5) (2019-10-22)
 
