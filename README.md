@@ -101,6 +101,12 @@ The fully-qualified path of the working directory inside the Anka VM.
 
 Example: `/some/directory`
 
+### `workdir-create` (optional)
+
+Will execute `mkdir -p $WORKDIR` to ensure it exists before executing commands.
+
+Example: `true`
+
 ### `debug` (optional)
 
 Set this to `true` to enable debug output within the plugin.

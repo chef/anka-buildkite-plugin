@@ -125,6 +125,13 @@ if [[ -n "${BUILDKITE_PLUGIN_ANKA_START_DEVICES}" ]]; then
   plugin_prompt_and_run anka start $option $job_image_name
 fi
 
+# Ensure the workdir exists
+# shellcheck disable=SC2086,SC2154,SC2091
+if [[ -n $(plugin_read_config WORKDIR) ]] && [[ $(plugin_read_config WORKDIR_CREATE false) == true ]]; then
+  echo "--- :anka: Ensuring $(plugin_read_config WORKDIR) exists"
+  plugin_prompt_and_run anka $ANKA_DEBUG run "$job_image_name" mkdir -p "$(plugin_read_config WORKDIR)"
+fi
+
 ###############################################################
 # Obtain options to pass to bash command on the end of anka run
 bash_ops=()

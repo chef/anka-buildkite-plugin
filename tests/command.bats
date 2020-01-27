@@ -151,6 +151,33 @@ export BUILDKITE_BUILD_URL="https://buildkite.com/repo/name/builds/12034"
   unset BUILDKITE_JOB_ID
 }
 
+@test "Run with BUILDKITE_COMMAND, create the workdir first, then use --workdir" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="command \\\"a string\\\""
+  export BUILDKITE_PLUGIN_ANKA_WORKDIR="/workdir"
+  export BUILDKITE_PLUGIN_ANKA_WORKDIR_CREATE=true
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 1" \
+    "registry pull ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : echo pulled vm in anka" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm in anka" \
+    "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} mkdir -p $BUILDKITE_PLUGIN_ANKA_WORKDIR : echo ran mkdir" \
+    "run --workdir $BUILDKITE_PLUGIN_ANKA_WORKDIR ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"$BUILDKITE_COMMAND\" : echo ran command in anka"
+
+  run $PWD/hooks/command
+
+  assert_success
+  assert_output --partial "ran command in anka"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_WORKDIR
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_WORKDIR_CREATE
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+}
+
 @test "Run with BUILDKITE_COMMAND and custom host volume" {
   export BUILDKITE_JOB_ID="UUID"
   export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"

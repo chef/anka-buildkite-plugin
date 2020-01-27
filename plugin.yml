@@ -25,6 +25,8 @@ configuration:
       type: boolean
     workdir:
       type: string
+    workdir-create:
+      type: boolean
     debug:
       type: boolean
     anka-debug:
