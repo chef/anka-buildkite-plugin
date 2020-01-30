@@ -196,6 +196,12 @@ Will stop the VM, set memory size, and then execute commands you've specified.
 
 Example: `32`
 
+### `modify-mac` (optional)
+
+Will stop the VM, set the MAC address, and then execute commands you've specified.
+
+Example: `00:1B:44:11:3A:B7`
+
 ## Anka Start ---
 
 ### `start-devices` (optional)

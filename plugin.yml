@@ -49,6 +49,8 @@ configuration:
       type: integer
     modify-ram:
       type: integer
+    modify-mac:
+      type: string
     start-devices:
       type: array
   required:

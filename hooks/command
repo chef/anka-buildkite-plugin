@@ -90,8 +90,9 @@ lock_file disable # If two pulls or a clone and a pull happen on the same host, 
 # Handle modifications to CPU/RAM/etc
 BUILDKITE_PLUGIN_ANKA_MODIFY_CPU=$(plugin_read_list MODIFY_CPU)
 BUILDKITE_PLUGIN_ANKA_MODIFY_RAM=$(plugin_read_list MODIFY_RAM)
+BUILDKITE_PLUGIN_ANKA_MODIFY_MAC=$(plugin_read_list MODIFY_MAC)
 BUILDKITE_PLUGIN_ANKA_START_DEVICES=$(plugin_read_list START_DEVICES)
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_CPU}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_START_DEVICES}" ]]; then
+if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_CPU}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_START_DEVICES}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}" ]]; then
   echo "--- :anka: Ensuring $job_image_name is stopped"
   FORCED=${FORCED:-false} # Used for bats triggering of ops
   stop_ops=()
@@ -112,6 +113,13 @@ if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}" ]]; then
   echo "--- :anka: Modifying RAM to ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G"
   # shellcheck disable=SC2086
   plugin_prompt_and_run anka modify $job_image_name set ram ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G
+fi
+acceptable_mac_pattern='^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$'
+if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}" ]]; then
+  [[ ! $BUILDKITE_PLUGIN_ANKA_MODIFY_MAC =~ $acceptable_mac_pattern ]] && echo "Acceptable input: $acceptable_mac_pattern" && exit 1
+  echo "--- :anka: Modifying MAC to ${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}"
+  # shellcheck disable=SC2086
+  plugin_prompt_and_run anka modify $job_image_name set network-card --mac ${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}
 fi
 if [[ -n "${BUILDKITE_PLUGIN_ANKA_START_DEVICES}" ]]; then
   start_devices=()

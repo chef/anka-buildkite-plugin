@@ -630,34 +630,114 @@ env"
   export BUILDKITE_COMMAND="ls -alht"
   export BUILDKITE_PLUGIN_ANKA_MODIFY_CPU="6"
   export BUILDKITE_PLUGIN_ANKA_MODIFY_RAM="32"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_MAC="00:1B:44:11:3A:B7"
 
   stub anka \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
     "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
     "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} | grep suspended : exit 0" \
     "stop ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped" \
-    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set cpu 6 : echo set cpu 6" \
-    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set ram 32G : echo set ram 32G" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set cpu $BUILDKITE_PLUGIN_ANKA_MODIFY_CPU : echo set cpu $BUILDKITE_PLUGIN_ANKA_MODIFY_CPU" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set ram ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G : echo set ram ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G" \
+    "modify ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} set network-card --mac $BUILDKITE_PLUGIN_ANKA_MODIFY_MAC : echo set network-card mac address to $BUILDKITE_PLUGIN_ANKA_MODIFY_MAC" \
     "run ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} bash -c \"ls -alht\" : echo ls command run"
 
   run $PWD/hooks/command
   assert_success
   assert_output --partial "cloned vm"
   assert_output --partial "stopped"
-  assert_output --partial "set cpu 6"
-  assert_output --partial "set ram 32G"
+  assert_output --partial "set cpu $BUILDKITE_PLUGIN_ANKA_MODIFY_CPU"
+  assert_output --partial "set ram ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G"
+  assert_output --partial "set network-card mac address to $BUILDKITE_PLUGIN_ANKA_MODIFY_MAC"
   assert_output --partial "ls command"
 
   unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_MAC
   unset BUILDKITE_PLUGIN_ANKA_MODIFY_RAM
   unset BUILDKITE_PLUGIN_ANKA_MODIFY_CPU
-  unset BUILDKITE_PLUGIN_ANKA_BASH_INTERACTIVE
   unset BUILDKITE_COMMAND
   unset BUILDKITE_PLUGIN_ANKA_VM_NAME
   unset BUILDKITE_JOB_ID
   unset BUILDKITE_PLUGIN_ANKA_CLEANUP
 }
 
+@test "Modify CPU Failure" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_CPU="t"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} | grep suspended : exit 0" \
+    "stop ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped"
+    
+  run $PWD/hooks/command
+  assert_failure
+  assert_output --partial "cloned vm"
+  assert_output --partial "stopped"
+  assert_output --partial "Acceptable input"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_CPU
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Modify RAM Failure" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_RAM="t"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} | grep suspended : exit 0" \
+    "stop ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped"
+    
+  run $PWD/hooks/command
+  assert_failure
+  assert_output --partial "cloned vm"
+  assert_output --partial "stopped"
+  assert_output --partial "Acceptable input"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_RAM
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
+
+@test "Modify MAC Failure" {
+  export BUILDKITE_JOB_ID="UUID"
+  export BUILDKITE_PLUGIN_ANKA_VM_NAME="macos-base-10.14"
+  export BUILDKITE_COMMAND="ls -alht"
+  export BUILDKITE_PLUGIN_ANKA_MODIFY_MAC="192.14"
+
+  stub anka \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME} : exit 0" \
+    "clone ${BUILDKITE_PLUGIN_ANKA_VM_NAME} ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo cloned vm" \
+    "list ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} | grep suspended : exit 0" \
+    "stop ${BUILDKITE_PLUGIN_ANKA_VM_NAME}-${BUILDKITE_JOB_ID} : echo stopped"
+    
+  run $PWD/hooks/command
+  assert_failure
+  assert_output --partial "cloned vm"
+  assert_output --partial "stopped"
+  assert_output --partial "Acceptable input"
+
+  unstub anka
+  unset BUILDKITE_PLUGIN_ANKA_MODIFY_MAC
+  unset BUILDKITE_COMMAND
+  unset BUILDKITE_PLUGIN_ANKA_VM_NAME
+  unset BUILDKITE_JOB_ID
+  unset BUILDKITE_PLUGIN_ANKA_CLEANUP
+}
 
 @test "Modify --force" {
   export BUILDKITE_JOB_ID="UUID"
