@@ -12,7 +12,7 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 steps:
   - command: make test
     plugins:
-      - chef/anka#v0.5.8:
+      - chef/anka#v0.6.0:
           vm-name: macos-base-10.14
 ```
 
@@ -30,7 +30,7 @@ steps:
       - cd repo-folder; ./build.sh
     plugins:
       - thedyrt/skip-checkout#v0.1.1: ~
-      - chef/anka#v0.5.8:
+      - chef/anka#v0.6.0:
           vm-name: base-vm-mojave
           no-volume: true
           wait-network: true
@@ -161,7 +161,7 @@ Should the default registry not be available, the failover registries you specif
 Example:
 ```
     plugins:
-    - chef/anka#v0.5.8:
+    - chef/anka#v0.6.0:
         failover-registries:
           - 'registry_1'
           - 'registry_2'

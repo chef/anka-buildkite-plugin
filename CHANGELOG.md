@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.5.8 -->
+<!-- latest_release 0.6.0 -->
+## [v0.6.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.6.0) (2020-01-30)
+
+#### Merged Pull Requests
+- Added modify-mac and better tests [#31](https://github.com/chef/anka-buildkite-plugin/pull/31) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.5.8](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.8) (2020-01-28)
 
 #### Merged Pull Requests
 - Added workdir-create so ensure the workdir exists on the host before executing commands [#30](https://github.com/chef/anka-buildkite-plugin/pull/30) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.5.7](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.7) (2020-01-16)
 
