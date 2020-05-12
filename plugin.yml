@@ -23,6 +23,8 @@ configuration:
       type: string
     wait-network:
       type: boolean
+    wait-time:
+      type: boolean
     workdir:
       type: string
     workdir-create:
