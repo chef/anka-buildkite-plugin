@@ -1,67 +1,53 @@
 # Anka Buildkite Plugin
 
-A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps in [Anka](https://ankadoc.bitbucket.io/#introduction) virtual machines.
+A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps in [Anka](https://ankadocs.veertu.com/docs/what-is-anka/) virtual machines.
 
-- By default, cloned VMs will be deleted on pipeline cancellation, failure, or success.
-- At this time, this plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
+- You need to ensure your Anka Nodes (host machines running Anka software) have the Buildkite agent installed and show under your Agents listing inside of Buildkite.
+- The plugin will create a cloned VM to run instructions in and will deleted the VM on pipeline `cancellation`, `failure`, or `success`.
+- The plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
 - A lock file (`/tmp/anka-buildkite-plugin-lock`) is created around pull and cloning. This prevents collision/ram state corruption when you're running two different jobs and pulling two different tags on the same anka node. The error you'd see otherwise is `state_lib/b026f71c-7675-11e9-8883-f01898ec0a5d.ank: failed to open image, error 2`
 
-## Example
+## Anka VM Template & Tag Requirements
+
+1. In the VM, make sure remote login is enabled (`System Preferences > Sharing`).
+
+## Pipeline Step Definition Example
 
 ```yml
 steps:
   - command: make test
+    agents: "queue=mac-anka-large-node-fleet"
     plugins:
       - chef/anka#v0.6.0:
           vm-name: macos-base-10.14
-```
-
-## Best Practices
-### Shared Folders
-
-[Veertu](https://veertu.com) states that the performance of using shared folders is not completely optimized, so it is best practice to disable this.
-As an alternative, it is suggested to clone and pull the repository as the first commands in the pipeline step.
-
-Example:
-```yml
-steps:
-  - commands:
-      - git clone $BUILDKITE_REPO && cd repo-folder && git checkout -f $BUILDKITE_COMMIT
-      - cd repo-folder; ./build.sh
-    plugins:
-      - thedyrt/skip-checkout#v0.1.1: ~
-      - chef/anka#v0.6.0:
-          vm-name: base-vm-mojave
-          no-volume: true
-          wait-network: true
 ```
 
 ## Configuration
 
 ### `vm-name` (required)
 
-The name of the Anka virtual machine to use as the base. The plugin will create a step-specific clone prior to execution.
+The name of the Anka VM Template to use as the base. The plugin will create a step-specific clone prior to execution.
 
 Example: `macos-base-10.14`
 
 ### `vm-registry-tag` (optional)
 
-A tag associated with the VM you wish to pull from the Anka Registry.
+The tag associated with the VM Template (`vm-name`) you wish to pull from the Anka Cloud Registry.
 
 Example: `latest`
 
 ### `vm-registry-version` (optional)
 
-A version associated with the VM you wish to pull from the Anka Registry.
+A version associated with the VM Template you wish to pull from the Anka Registry (every tag has a version number assigned to it).
 
 Example: `1`
 
 ### `always-pull` (optional)
 
-By default, the `anka-buildkite-plugin` will only pull the VM from the Anka Registry is missing. Set this value to `true` if you wish to pull the VM for every step.
+By default, the `anka-buildkite-plugin` will only pull the VM Template from the Anka Registry if it's not on the Node. Set this value to `true` if you wish to pull the VM Template before the VM is cloned and started.
 
-- Should your registry be down and the pull fail, we will not fail the buildkite run. This prevents your registry from being a single point of failure for pipelines. We suggest monitoring for registry availability or failures.
-- You can also use `"shrink"` to remove other local tags for the vm-name, optimizing the footprint.
+- Should your registry be down and the pull fail, the plugin will not fail the buildkite run. This prevents your registry from being a single point of failure for pipelines. We suggest monitoring for registry availability or failures.
+- You can set the value to `"shrink"` in order to remove other local tags for the `vm-name`, optimizing the footprint.
 
 Example: `true`
 
@@ -82,6 +68,21 @@ Example: `./my-env.txt`
 Set this to `true` if you do not wish to mount the current directory into the Anka VM.
 
 Example: `true`
+
+> [Veertu Inc](https://veertu.com) (creators of Anka) state that the performance of using shared/mounted folders is not optimized. If you disable this, you need to be aware that the `git clone` of your repo will no longer be available inside of the VM.
+You can simply clone it as your first step:
+```yml
+steps:
+  - commands:
+     - git clone $BUILDKITE_REPO && cd repo-folder && git checkout -f $BUILDKITE_COMMIT
+     - cd repo-folder; ./build.sh
+    plugins:
+      - thedyrt/skip-checkout#v0.1.1: ~
+      - chef/anka#v0.6.0:
+         vm-name: base-vm-mojave
+         no-volume: true
+         wait-network: true
+```
 
 ### `volume` (optional)
 
@@ -136,36 +137,42 @@ Example: `true`
 
 Commands to run on the HOST machine BEFORE any guest/anka run commands. Useful if you need to download buildkite artifacts into the current working directory from a previous step. This can destroy your host. Be very careful what you do with it.
 
-- Be sure to double escape variables you don't want eval to try and interpolate too soon.
+> Be sure to double escape variables you don't want eval to try and interpolate too soon.
 
-Example:
-```
+```yml
+steps:
+  - command: make test
+    agents: "queue=mac-anka-large-node-fleet"
     plugins:
-    - chef/anka . . .
-        pre-commands:
-          - 'echo 123 && echo 456'
-          - 'buildkite-agent artifact download "build.tar.gz" . --step ":aws: Amazon Linux 1 Build"'
-          - 'echo \\$variableOnTheHost'
+      - chef/anka#v0.6.0:
+          vm-name: macos-base-10.14
+          pre-commands:
+            - 'echo 123 && echo 456'
+            - 'buildkite-agent artifact download "build.tar.gz" . --step ":aws: Amazon Linux 1 Build"'
+            - 'echo \\$variableOnTheHost'
 ```
 
 ### `post-commands` (optional) (DANGEROUS)
 
 Commands to run on the HOST machine AFTER any guest/anka run commands. Useful if you need to upload artifacts created in the build/test process. This can destroy your host. Be very careful what you do with it.
 
-Example: A list, similar to pre-commands.
+Example: A YAML list, similar to pre-commands.
 
 ### `failover-registries` (optional)
 
 Should the default registry not be available, the failover registries you specify will be used. It will go through each in the list and use the first available.
 
-Example:
-```
+```yml
+steps:
+  - command: make test
+    agents: "queue=mac-anka-large-node-fleet"
     plugins:
-    - chef/anka#v0.6.0:
-        failover-registries:
-          - 'registry_1'
-          - 'registry_2'
-          - 'registry_3'
+      - chef/anka#v0.6.0:
+          vm-name: macos-base-10.14
+          failover-registries:
+            - 'registry_1'
+            - 'registry_2'
+            - 'registry_3'
 ```
 
 ### `pre-execute-sleep` (optional)
