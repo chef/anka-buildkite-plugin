@@ -3,7 +3,7 @@
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps in [Anka](https://ankadocs.veertu.com/docs/what-is-anka/) virtual machines.
 
 - You need to ensure your Anka Nodes (host machines running Anka software) have the Buildkite agent installed and show under your Agents listing inside of Buildkite.
-- The plugin will create a cloned VM to run instructions in and will deleted the VM on pipeline `cancellation`, `failure`, or `success`.
+- The plugin will create a cloned VM to run instructions in and will delete the VM on pipeline status `cancellation`, `failure`, or `success`.
 - The plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
 - A lock file (`/tmp/anka-buildkite-plugin-lock`) is created around pull and cloning. This prevents collision/ram state corruption when you're running two different jobs and pulling two different tags on the same anka node. The error you'd see otherwise is `state_lib/b026f71c-7675-11e9-8883-f01898ec0a5d.ank: failed to open image, error 2`
 
@@ -93,6 +93,12 @@ Example: `/some/directory`
 ### `wait-network` (optional)
 
 Set this to `true` if you wish to delay the execution of your `command` until networking has been established in the Anka VM.
+
+Example: `true`
+
+### `wait-time` (optional)
+
+Set this to `true` if you wish to delay the execution of your `command` until sntp has been updated in the Anka VM.
 
 Example: `true`
 
