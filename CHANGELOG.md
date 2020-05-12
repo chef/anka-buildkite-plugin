@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.6.0 -->
+<!-- latest_release 0.6.1 -->
+## [v0.6.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.6.1) (2020-05-12)
+
+#### Merged Pull Requests
+- Added --wait-time option [#33](https://github.com/chef/anka-buildkite-plugin/pull/33) ([NorseGaud](https://github.com/NorseGaud))
+<!-- latest_release -->
+
 ## [v0.6.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.6.0) (2020-01-30)
 
 #### Merged Pull Requests
 - Added modify-mac and better tests [#31](https://github.com/chef/anka-buildkite-plugin/pull/31) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.5.8](https://github.com/chef/anka-buildkite-plugin/tree/v0.5.8) (2020-01-28)
 
