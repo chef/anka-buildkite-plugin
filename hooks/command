@@ -155,14 +155,31 @@ if $(plugin_read_config BASH_INTERACTIVE false); then
 fi
 bash_ops+=("-c") # Needed, don't remove
 
+# Can be removed after Big Sur support for Volume mounts is enabled in Anka VMs
+if [[ $job_image_name == macos-omnibus-11.* ]]; then
+  echo "--- :anka: Creating WORKDIR on $job_image_name"
+  plugin_prompt_and_run anka $ANKA_DEBUG run -n "$job_image_name" mkdir -p "/var/tmp/buildkite-workspace"
+  plugin_prompt_and_run anka $ANKA_DEBUG run --env --wait-network -n "$job_image_name" ls -ld "/var/tmp/buildkite-workspace"
+fi
+
 ##########
 # ANKA RUN
 commands=()
 while IFS='' read -r line; do commands+=("${PRE_EXECUTE_SLEEP}${PRE_EXECUTE_PING_SLEEP}$line"); done <<< "$BUILDKITE_COMMAND"
 for command in "${commands[@]:-}"; do
   echo "+++ Executing $command in $job_image_name"
-  # shellcheck disable=SC2086
-  plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" bash "${bash_ops[@]:+${bash_ops[@]}}" "$command"
+  if [[ $job_image_name == macos-omnibus-11.* ]]; then
+    # Can be removed after Big Sur support for Volume mounts is enabled in Anka VMs
+    echo "--- :anka: Getting IP address for $job_image_name"
+    job_image_ip=$(anka --machine-readable show "$job_image_name" |jq -r '.body.ip')
+    echo "--- :anka: Copying files to $job_image_ip"
+    plugin_prompt_and_run rsync -avzP . anka@"$job_image_ip":/var/tmp/buildkite-workspace
+    # shellcheck disable=SC2086
+    plugin_prompt_and_run anka $ANKA_DEBUG run -n -w "/var/tmp/buildkite-workspace/" "${run_args[@]:+${run_args[@]}}" bash "${bash_ops[@]:+${bash_ops[@]}}" "$command"
+  else
+    # shellcheck disable=SC2086
+    plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" bash "${bash_ops[@]:+${bash_ops[@]}}" "$command"
+  fi
 done
 
 ########################################
