@@ -3,7 +3,7 @@ set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "$DIR/../lib/shared.bash"
 
 job_image_name="$(plugin_read_config VM_NAME)-$BUILDKITE_JOB_ID"

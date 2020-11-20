@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+
+DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+# shellcheck disable=SC1090,SC1091
+. "$DIR/../lib/shared.bash"
+
+#
+# We run this pre-checkout because if we can not pull down the necessary image, then there is no point checking out the
+# source code since we won't be able to run anything anyways (especially if the git repository is large).
+#
+
+lock_file enable # If two pulls or a clone and a pull happen on the same host, anka's ram file will get a messed up. Lock file should prevent another pull/clone while one is already happening.
+
+# shellcheck disable=SC2086
+if ( ! anka $ANKA_DEBUG list "$(plugin_read_config VM_NAME)" ) || [[ $(plugin_read_config ALWAYS_PULL false) =~ (true|on|1|shrink) ]]; then
+  pull_args=()
+  if [[ -n $(plugin_read_config VM_REGISTRY_TAG) ]]; then
+    pull_args+=("--tag" "$(plugin_read_config VM_REGISTRY_TAG)")
+  fi
+  if [[ -n $(plugin_read_config VM_REGISTRY_VERSION) ]]; then
+    pull_args+=("--version" "$(plugin_read_config VM_REGISTRY_VERSION)")
+  fi
+  if [[ $(plugin_read_config ALWAYS_PULL) == "shrink" ]]; then
+    pull_args+=("-s") # Remove other local tags to optimize the footprint
+  fi
+  echo "--- :anka: Pulling $(plugin_read_config VM_NAME) from Anka Registry"
+  # shellcheck disable=SC2086
+  plugin_prompt_and_run anka $ANKA_DEBUG registry $FAILOVER_REGISTRY pull "${pull_args[@]:+${pull_args[@]}}" "$(plugin_read_config VM_NAME)" # ${pull_args[@]:+${pull_args[@]}}: pull_args[@]: unbound variable : https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
+else
+  echo ":anka: $(plugin_read_config VM_NAME) is already present on the host"
+fi
+
+lock_file disable # If two pulls or a clone and a pull happen on the same host, anka's ram file will get a messed up. Lock file should prevent another pull/clone while one is already happening.

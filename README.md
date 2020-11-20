@@ -6,6 +6,9 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pi
 - The plugin will create a cloned VM to run instructions in and will delete the VM on pipeline status `cancellation`, `failure`, or `success`.
 - The plugin does not automatically mount the `buildkite-agent` or inject any `BUILDKITE_` environment variables.
 - A lock file (`/tmp/anka-buildkite-plugin-lock`) is created around pull and cloning. This prevents collision/ram state corruption when you're running two different jobs and pulling two different tags on the same anka node. The error you'd see otherwise is `state_lib/b026f71c-7675-11e9-8883-f01898ec0a5d.ank: failed to open image, error 2`
+- If we are unable to detect the FUSE driver within your VM, we will use the `anka cp` utility to copy the contents of your `volume` (or current working directory) into the VM (unless `no-volume` is `true`).
+
+> We recommend using Anka Build 2.3 or greater with this plugin, especially if you have Big Sur VMs.
 
 ## Anka VM Template & Tag Requirements
 
@@ -86,7 +89,7 @@ steps:
 
 ### `volume` (optional)
 
-The path to a directory, other than the current directory, you wish to mount into the Anka VM.
+The path to a directory on your Buildkite host you wish to mount into the Anka VM. Defaults to the current working directory. Mounted volume will be available within the VM at `/private/var/tmp/ankafs.0`.
 
 Example: `/some/directory`
 
@@ -104,7 +107,7 @@ Example: `true`
 
 ### `workdir` (optional)
 
-The fully-qualified path of the working directory inside the Anka VM.
+The fully-qualified path of the working directory inside the Anka VM. Defaults to `/private/var/tmp/ankafs.0` unless `no-volume` is set to true.
 
 Example: `/some/directory`
 
