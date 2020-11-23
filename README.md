@@ -25,6 +25,17 @@ steps:
           vm-name: macos-base-10.14
 ```
 
+## Hook Steps
+
+Hook | Description
+--- | ---
+`pre-checkout` | Download the specified virtual machine from your registry (if applicable).
+`post-checkout` | Clone the virtual machine and perform any hardware modifications.
+`pre-command` | Run any of your `pre-commands` (see below).
+`command` | Execute your command inside of the cloned virtual machine.
+`post-command` | Run any of your `post-commands` (see below).
+`pre-exit` | Perform any clean up steps
+
 ## Configuration
 
 ### `vm-name` (required)
