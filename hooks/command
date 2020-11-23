@@ -14,7 +14,7 @@ job_image_name="$(plugin_read_config VM_NAME)-${BUILDKITE_JOB_ID}"
 if [[ $(plugin_read_config NO_VOLUME false) == false ]]; then
   echo "--- :anka: Detecting FUSE compatability"
   # shellcheck disable=SC2086
-  if plugin_prompt_and_run anka run "$job_image_name" kextstat | grep "com.veertu.filesystems.vtufs" &>/dev/null; then
+  if plugin_prompt_and_run anka run --no-volume "$job_image_name" kextstat | grep "com.veertu.filesystems.vtufs" &>/dev/null; then
     echo "Veertu FUSE driver detected. Will mount volume into ${job_image_name}."
   else
     echo "Veertu FUSE driver NOT detected."
