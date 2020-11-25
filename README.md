@@ -21,7 +21,7 @@ steps:
   - command: make test
     agents: "queue=mac-anka-large-node-fleet"
     plugins:
-      - chef/anka#v0.6.1:
+      - chef/anka#v0.7.0:
           vm-name: macos-base-10.14
 ```
 
@@ -92,7 +92,7 @@ steps:
      - cd repo-folder; ./build.sh
     plugins:
       - thedyrt/skip-checkout#v0.1.1: ~
-      - chef/anka#v0.6.1:
+      - chef/anka#v0.7.0:
          vm-name: base-vm-mojave
          no-volume: true
          wait-network: true
@@ -164,7 +164,7 @@ steps:
   - command: make test
     agents: "queue=mac-anka-large-node-fleet"
     plugins:
-      - chef/anka#v0.6.1:
+      - chef/anka#v0.7.0:
           vm-name: macos-base-10.14
           pre-commands:
             - 'echo 123 && echo 456'
@@ -187,7 +187,7 @@ steps:
   - command: make test
     agents: "queue=mac-anka-large-node-fleet"
     plugins:
-      - chef/anka#v0.6.1:
+      - chef/anka#v0.7.0:
           vm-name: macos-base-10.14
           failover-registries:
             - 'registry_1'

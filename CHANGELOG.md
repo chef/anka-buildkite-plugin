@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.6.1 -->
+<!-- latest_release 0.7.0 -->
+## [v0.7.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.7.0) (2020-11-25)
+
+#### Merged Pull Requests
+- Add support for Anka Build 2.3 and Big Sur [#35](https://github.com/chef/anka-buildkite-plugin/pull/35) ([tduffield](https://github.com/tduffield))
+<!-- latest_release -->
+
 ## [v0.6.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.6.1) (2020-05-12)
 
 #### Merged Pull Requests
 - Added --wait-time option [#33](https://github.com/chef/anka-buildkite-plugin/pull/33) ([NorseGaud](https://github.com/NorseGaud))
-<!-- latest_release -->
 
 ## [v0.6.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.6.0) (2020-01-30)
 
