@@ -3,157 +3,94 @@ set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "$DIR/../lib/shared.bash"
 
-job_image_name="$(plugin_read_config VM_NAME)-$BUILDKITE_JOB_ID"
+job_image_name="$(plugin_read_config VM_NAME)-${BUILDKITE_JOB_ID}"
 
-########################################
-# PRE (anka run) host command execution
-BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS=$(plugin_read_list PRE_COMMANDS)
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS}" ]]; then
-  host_commands=()
-  while IFS='' read -r line; do host_commands+=("$line"); done <<< "$BUILDKITE_PLUGIN_ANKA_PRE_COMMANDS"
-  for command in "${host_commands[@]:+${host_commands[@]}}"; do
-    echo "--- :anka: Executing ${command} on host"
-    if [[ $(plugin_read_config DEBUG "false") =~ (true|on|1) ]] ; then
-      echo -ne '\033[90m$\033[0m' >&2
-      printf " %q" "eval \"$command\"" >&2
-      echo >&2
-    fi
-    # shellcheck disable=SC2086
-    eval "$command"
-  done
+##########################
+# FUSE compatability logic
+# This is compat logic to handle when Veertu's FUSE driver is not installed (if we want to mount a volume)
+if [[ $(plugin_read_config NO_VOLUME false) == false ]]; then
+  echo "--- :anka: Detecting FUSE compatability"
+  # shellcheck disable=SC2086
+  if plugin_prompt_and_run anka run --no-volume "$job_image_name" kextstat | grep "com.veertu.filesystems.vtufs" &>/dev/null; then
+    echo "Veertu FUSE driver detected. Will mount volume into ${job_image_name}."
+  else
+    echo "Veertu FUSE driver NOT detected."
+    echo "Copying files from $(plugin_read_config VOLUME .) to ${job_image_name}. (This may take awhile depending on the size of your volume)"
+    plugin_prompt_and_run anka $ANKA_DEBUG cp -a "$(plugin_read_config VOLUME .)" "${job_image_name}:/private/var/tmp/ankafs.0"
+  fi
+
+  # Manually assign the workdir to be the ankafs to ensure consistent workdir between FUSE and non-FUSE VMs
+  # shellcheck disable=SC2034
+  BUILDKITE_PLUGIN_ANKA_WORKDIR="$(plugin_read_config WORKDIR /private/var/tmp/ankafs.0)"
 fi
 
-#####################
-# Pull Down the Image
-lock_file enable # If two pulls or a clone and a pull happen on the same host, anka's ram file will get a messed up. Lock file should prevent another pull/clone while one is already happening.
-# shellcheck disable=SC2086
-if ( ! anka $ANKA_DEBUG list "$(plugin_read_config VM_NAME)" ) || [[ $(plugin_read_config ALWAYS_PULL false) =~ (true|on|1|shrink) ]]; then
-  pull_args=()
-  if [[ -n $(plugin_read_config VM_REGISTRY_TAG) ]]; then
-    pull_args+=("--tag" "$(plugin_read_config VM_REGISTRY_TAG)")
-  fi
-  if [[ -n $(plugin_read_config VM_REGISTRY_VERSION) ]]; then
-    pull_args+=("--version" "$(plugin_read_config VM_REGISTRY_VERSION)")
-  fi
-  if [[ $(plugin_read_config ALWAYS_PULL) == "shrink" ]]; then
-    pull_args+=("-s") # Remove other local tags to optimize the footprint
-  fi
-  echo "--- :anka: Pulling $(plugin_read_config VM_NAME) from Anka Registry"
+# Ensure the (user-specified) workdir exists (we ignore our default value for the purposes of this logic)
+# shellcheck disable=SC2086,SC2154,SC2091
+if [[ -n $(plugin_read_config WORKDIR) ]] && [[ $(plugin_read_config WORKDIR_CREATE false) == true ]]; then
+  echo "--- :anka: Ensuring $(plugin_read_config WORKDIR) exists"
   # shellcheck disable=SC2086
-  plugin_prompt_and_run anka $ANKA_DEBUG registry $FAILOVER_REGISTRY pull "${pull_args[@]:+${pull_args[@]}}" "$(plugin_read_config VM_NAME)" # ${pull_args[@]:+${pull_args[@]}}: pull_args[@]: unbound variable : https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-else
-  echo ":anka: $(plugin_read_config VM_NAME) is already present on the host"
+  plugin_prompt_and_run anka $ANKA_DEBUG run "$job_image_name" mkdir -p "$(plugin_read_config WORKDIR)"
 fi
 
 #######################################
 # Parse out all the run command options
 run_args=()
-# Working directory inside the VM
-if [[ -n $(plugin_read_config WORKDIR) ]] ; then
-  run_args+=("--workdir" "$(plugin_read_config WORKDIR)")
-fi
+
 # Mount host directory (current directory by default)
-if [[ -n $(plugin_read_config VOLUME) ]] ; then
+if [[ -n $(plugin_read_config VOLUME) ]]; then
   run_args+=("--volume" "$(plugin_read_config VOLUME)")
 fi
+
 # Prevent the mounting of the host directory
 # shellcheck disable=SC2091
 if $(plugin_read_config NO_VOLUME false); then
   run_args+=("--no-volume")
 fi
+
 # Inherit environment variables from host
 # shellcheck disable=SC2091
 if $(plugin_read_config INHERIT_ENVIRONMENT_VARS false) ; then
   run_args+=("--env")
 fi
+
 # Provide an environment variable file
 if [[ -n $(plugin_read_config ENVIRONMENT_FILE) ]] ; then
   run_args+=("--env-file" "$(plugin_read_config ENVIRONMENT_FILE)")
 fi
+
 # Wait to start processing until network can be established
 # shellcheck disable=SC2091
 if $(plugin_read_config WAIT_NETWORK false); then
   run_args+=("--wait-network")
 fi
+
 # Wait to start processing until time is updated
 # shellcheck disable=SC2091
 if $(plugin_read_config WAIT_TIME false); then
   run_args+=("--wait-time")
 fi
+
+# Add the workdir if specified
+# shellcheck disable=SC2091
+if [[ -n $(plugin_read_config WORKDIR) ]]; then
+  run_args+=("--workdir" "$(plugin_read_config WORKDIR)")
+fi
+
 run_args+=("$job_image_name")
-#
-echo "--- :anka: Cloning $(plugin_read_config VM_NAME) to $job_image_name"
-# shellcheck disable=SC2086,SC2154
-plugin_prompt_and_run anka $ANKA_DEBUG clone "$(plugin_read_config VM_NAME)" "$job_image_name"
-
-lock_file disable # If two pulls or a clone and a pull happen on the same host, anka's ram file will get a messed up. Lock file should prevent another pull/clone while one is already happening.
-
-#####################################
-# Handle modifications to CPU/RAM/etc
-BUILDKITE_PLUGIN_ANKA_MODIFY_CPU=$(plugin_read_list MODIFY_CPU)
-BUILDKITE_PLUGIN_ANKA_MODIFY_RAM=$(plugin_read_list MODIFY_RAM)
-BUILDKITE_PLUGIN_ANKA_MODIFY_MAC=$(plugin_read_list MODIFY_MAC)
-BUILDKITE_PLUGIN_ANKA_START_DEVICES=$(plugin_read_list START_DEVICES)
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_CPU}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_START_DEVICES}" ]] || [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}" ]]; then
-  echo "--- :anka: Ensuring $job_image_name is stopped"
-  FORCED=${FORCED:-false} # Used for bats triggering of ops
-  stop_ops=()
-  # shellcheck disable=SC2086
-  ( $FORCED || [[ -n "$(anka list $job_image_name \| grep suspended)" ]] ) && stop_ops+=("--force")
-  # shellcheck disable=SC2086
-  plugin_prompt_and_run anka stop "${stop_ops[@]:+${stop_ops[@]}}" $job_image_name
-fi
-acceptable_pattern='^[0-9]+$'
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_CPU}" ]]; then
-  [[ ! $BUILDKITE_PLUGIN_ANKA_MODIFY_CPU =~ $acceptable_pattern ]] && echo "Acceptable input: [0-9]+" && exit 1
-  echo "--- :anka: Modifying CPU cores to ${BUILDKITE_PLUGIN_ANKA_MODIFY_CPU}"
-  # shellcheck disable=SC2086
-  plugin_prompt_and_run anka modify $job_image_name set cpu $BUILDKITE_PLUGIN_ANKA_MODIFY_CPU
-fi
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}" ]]; then
-  [[ ! $BUILDKITE_PLUGIN_ANKA_MODIFY_RAM =~ $acceptable_pattern ]] && echo "Acceptable input: [0-9]+" && exit 1
-  echo "--- :anka: Modifying RAM to ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G"
-  # shellcheck disable=SC2086
-  plugin_prompt_and_run anka modify $job_image_name set ram ${BUILDKITE_PLUGIN_ANKA_MODIFY_RAM}G
-fi
-acceptable_mac_pattern='^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$'
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}" ]]; then
-  [[ ! $BUILDKITE_PLUGIN_ANKA_MODIFY_MAC =~ $acceptable_mac_pattern ]] && echo "Acceptable input: $acceptable_mac_pattern" && exit 1
-  echo "--- :anka: Modifying MAC to ${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}"
-  # shellcheck disable=SC2086
-  plugin_prompt_and_run anka modify $job_image_name set network-card --mac ${BUILDKITE_PLUGIN_ANKA_MODIFY_MAC}
-fi
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_START_DEVICES}" ]]; then
-  start_devices=()
-  while IFS='' read -r line; do start_devices+=("$line"); done <<< "$BUILDKITE_PLUGIN_ANKA_START_DEVICES"
-  option=""
-  for device in "${start_devices[@]:+${start_devices[@]}}"; do
-   option+="-d ${device} "
-  done
-  echo "--- :anka: Starting VM with ${option}"
-  # shellcheck disable=SC2086
-  plugin_prompt_and_run anka start $option $job_image_name
-fi
-
-# Ensure the workdir exists
-# shellcheck disable=SC2086,SC2154,SC2091
-if [[ -n $(plugin_read_config WORKDIR) ]] && [[ $(plugin_read_config WORKDIR_CREATE false) == true ]]; then
-  echo "--- :anka: Ensuring $(plugin_read_config WORKDIR) exists"
-  plugin_prompt_and_run anka $ANKA_DEBUG run "$job_image_name" mkdir -p "$(plugin_read_config WORKDIR)"
-fi
 
 ###############################################################
 # Obtain options to pass to bash command on the end of anka run
 bash_ops=()
+
 # Run bash with -i for interactive (anka run defaults to this off)
 # shellcheck disable=SC2091
 if $(plugin_read_config BASH_INTERACTIVE false); then
   bash_ops+=("-i")
 fi
-bash_ops+=("-c") # Needed, don't remove
+bash_ops+=("-c") # Needed, don't remove or move
 
 ##########
 # ANKA RUN
@@ -165,20 +102,3 @@ for command in "${commands[@]:-}"; do
   plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" bash "${bash_ops[@]:+${bash_ops[@]}}" "$command"
 done
 
-########################################
-# POST (anka run) host command execution
-BUILDKITE_PLUGIN_ANKA_POST_COMMANDS=$(plugin_read_list POST_COMMANDS)
-if [[ -n "${BUILDKITE_PLUGIN_ANKA_POST_COMMANDS}" ]]; then
-  host_commands=()
-  while IFS='' read -r line; do host_commands+=("$line"); done <<< "$BUILDKITE_PLUGIN_ANKA_POST_COMMANDS"
-  for command in "${host_commands[@]:+${host_commands[@]}}"; do
-    echo "--- :anka: Executing ${command} on host"
-    if [[ $(plugin_read_config DEBUG "false") =~ (true|on|1) ]] ; then
-      echo -ne '\033[90m$\033[0m' >&2
-      printf " %q" "eval \"$command\"" >&2
-      echo >&2
-    fi
-    # shellcheck disable=SC2086
-    eval "$command"
-  done
-fi
