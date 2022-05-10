@@ -1,11 +1,16 @@
 # `anka-buildkite-plugin` Changelog
 
-<!-- latest_release 0.7.0 -->
+<!-- latest_release 0.7.1 -->
+## [v0.7.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.7.1) (2022-05-10)
+
+#### Merged Pull Requests
+- dummy chnage for expeditor script [#38](https://github.com/chef/anka-buildkite-plugin/pull/38) ([mimaslanka](https://github.com/mimaslanka))
+<!-- latest_release -->
+
 ## [v0.7.0](https://github.com/chef/anka-buildkite-plugin/tree/v0.7.0) (2020-11-25)
 
 #### Merged Pull Requests
 - Add support for Anka Build 2.3 and Big Sur [#35](https://github.com/chef/anka-buildkite-plugin/pull/35) ([tduffield](https://github.com/tduffield))
-<!-- latest_release -->
 
 ## [v0.6.1](https://github.com/chef/anka-buildkite-plugin/tree/v0.6.1) (2020-05-12)
 
